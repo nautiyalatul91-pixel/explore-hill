@@ -1,0 +1,1 @@
+var e=`/assets/founder-CgdqIl7A.jpg`;export{e as t};
