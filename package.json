@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "vercel-build": "bun run build"
+   "vercel-build": "vite build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
