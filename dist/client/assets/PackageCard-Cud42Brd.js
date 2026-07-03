@@ -1,1 +1,131 @@
-import{t as e}from"./jsx-runtime-DGeXAQPT.js";import{n as t,r as n,t as r}from"./map-pin-BOCy7l3d.js";import{y as i}from"./index-ByEr9w9j.js";var a=e();function o({pkg:e}){return(0,a.jsxs)(`article`,{className:`group relative overflow-hidden rounded-3xl bg-card shadow-card hover-lift`,children:[(0,a.jsxs)(`div`,{className:`relative aspect-[4/3] overflow-hidden`,children:[(0,a.jsx)(`img`,{src:e.image,alt:e.name,loading:`lazy`,width:1280,height:960,className:`h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110`}),(0,a.jsx)(`div`,{className:`absolute inset-0 bg-gradient-to-t from-ridge/80 via-ridge/10 to-transparent`}),(0,a.jsxs)(`div`,{className:`absolute top-4 left-4 flex gap-2`,children:[(0,a.jsx)(`span`,{className:`rounded-full glass px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-ridge`,children:e.category===`trek`?`Trek`:`Trip`}),e.difficulty&&(0,a.jsx)(`span`,{className:`rounded-full bg-ember/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-ember-foreground`,children:e.difficulty})]}),(0,a.jsxs)(`div`,{className:`absolute bottom-4 left-5 right-5 text-white`,children:[(0,a.jsx)(`h3`,{className:`font-display text-2xl font-bold leading-tight`,children:e.name}),(0,a.jsxs)(`div`,{className:`mt-1 flex items-center gap-3 text-xs text-white/80`,children:[(0,a.jsxs)(`span`,{className:`inline-flex items-center gap-1`,children:[(0,a.jsx)(t,{className:`h-3.5 w-3.5`}),` `,e.duration]}),(0,a.jsxs)(`span`,{className:`inline-flex items-center gap-1`,children:[(0,a.jsx)(r,{className:`h-3.5 w-3.5`}),` Uttarakhand`]})]})]})]}),(0,a.jsxs)(`div`,{className:`p-6`,children:[(0,a.jsx)(`p`,{className:`text-sm text-muted-foreground line-clamp-2`,children:e.tagline}),(0,a.jsx)(`ul`,{className:`mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-foreground/80`,children:e.highlights.slice(0,4).map(e=>(0,a.jsxs)(`li`,{className:`flex items-start gap-1.5`,children:[(0,a.jsx)(`span`,{className:`mt-1 h-1 w-1 rounded-full bg-ember shrink-0`}),` `,e]},e))}),(0,a.jsxs)(`div`,{className:`mt-6 flex items-end justify-between`,children:[(0,a.jsxs)(`div`,{children:[(0,a.jsx)(`p`,{className:`text-[10px] uppercase tracking-widest text-muted-foreground`,children:`From`}),(0,a.jsxs)(`p`,{className:`font-display text-2xl font-bold text-primary`,children:[e.priceLabel,(0,a.jsxs)(`span`,{className:`text-xs font-medium text-muted-foreground`,children:[` `,`/person`]})]})]}),(0,a.jsxs)(i,{to:`/book`,search:{pkg:e.slug},className:`inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition`,children:[`Book Now `,(0,a.jsx)(n,{className:`h-3.5 w-3.5`})]})]})]})]})}export{o as t};
+import { t as e } from "./jsx-runtime-DGeXAQPT.js";
+import { n as t, r as n, t as r } from "./map-pin-BOCy7l3d.js";
+import { y as i } from "./index-ByEr9w9j.js";
+var a = e();
+function o({ pkg: e }) {
+  return (0, a.jsxs)(`article`, {
+    className: `group relative overflow-hidden rounded-3xl bg-card shadow-card hover-lift`,
+    children: [
+      (0, a.jsxs)(`div`, {
+        className: `relative aspect-[4/3] overflow-hidden`,
+        children: [
+          (0, a.jsx)(`img`, {
+            src: e.image,
+            alt: e.name,
+            loading: `lazy`,
+            width: 1280,
+            height: 960,
+            className: `h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110`,
+          }),
+          (0, a.jsx)(`div`, {
+            className: `absolute inset-0 bg-gradient-to-t from-ridge/80 via-ridge/10 to-transparent`,
+          }),
+          (0, a.jsxs)(`div`, {
+            className: `absolute top-4 left-4 flex gap-2`,
+            children: [
+              (0, a.jsx)(`span`, {
+                className: `rounded-full glass px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-ridge`,
+                children: e.category === `trek` ? `Trek` : `Trip`,
+              }),
+              e.difficulty &&
+                (0, a.jsx)(`span`, {
+                  className: `rounded-full bg-ember/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-ember-foreground`,
+                  children: e.difficulty,
+                }),
+            ],
+          }),
+          (0, a.jsxs)(`div`, {
+            className: `absolute bottom-4 left-5 right-5 text-white`,
+            children: [
+              (0, a.jsx)(`h3`, {
+                className: `font-display text-2xl font-bold leading-tight`,
+                children: e.name,
+              }),
+              (0, a.jsxs)(`div`, {
+                className: `mt-1 flex items-center gap-3 text-xs text-white/80`,
+                children: [
+                  (0, a.jsxs)(`span`, {
+                    className: `inline-flex items-center gap-1`,
+                    children: [
+                      (0, a.jsx)(t, { className: `h-3.5 w-3.5` }),
+                      ` `,
+                      e.duration,
+                    ],
+                  }),
+                  (0, a.jsxs)(`span`, {
+                    className: `inline-flex items-center gap-1`,
+                    children: [
+                      (0, a.jsx)(r, { className: `h-3.5 w-3.5` }),
+                      ` Uttarakhand`,
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      (0, a.jsxs)(`div`, {
+        className: `p-6`,
+        children: [
+          (0, a.jsx)(`p`, {
+            className: `text-sm text-muted-foreground line-clamp-2`,
+            children: e.tagline,
+          }),
+          (0, a.jsx)(`ul`, {
+            className: `mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-foreground/80`,
+            children: e.highlights.slice(0, 4).map((e) =>
+              (0, a.jsxs)(
+                `li`,
+                {
+                  className: `flex items-start gap-1.5`,
+                  children: [
+                    (0, a.jsx)(`span`, {
+                      className: `mt-1 h-1 w-1 rounded-full bg-ember shrink-0`,
+                    }),
+                    ` `,
+                    e,
+                  ],
+                },
+                e,
+              ),
+            ),
+          }),
+          (0, a.jsxs)(`div`, {
+            className: `mt-6 flex items-end justify-between`,
+            children: [
+              (0, a.jsxs)(`div`, {
+                children: [
+                  (0, a.jsx)(`p`, {
+                    className: `text-[10px] uppercase tracking-widest text-muted-foreground`,
+                    children: `From`,
+                  }),
+                  (0, a.jsxs)(`p`, {
+                    className: `font-display text-2xl font-bold text-primary`,
+                    children: [
+                      e.priceLabel,
+                      (0, a.jsxs)(`span`, {
+                        className: `text-xs font-medium text-muted-foreground`,
+                        children: [` `, `/person`],
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              (0, a.jsxs)(i, {
+                to: `/book`,
+                search: { pkg: e.slug },
+                className: `inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition`,
+                children: [
+                  `Book Now `,
+                  (0, a.jsx)(n, { className: `h-3.5 w-3.5` }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+export { o as t };

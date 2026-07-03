@@ -1,0 +1,266 @@
+import { r as __toESM } from "../_runtime.mjs";
+import { t as supabase } from "./client-B99rZN6a.mjs";
+import { n as require_react, r as require_jsx_runtime } from "../_libs/react+tanstack__react-query.mjs";
+import { t as PageHero } from "./PageHero-B2khC5ZF.mjs";
+import { E as Instagram, S as Mail, g as Phone, y as MessageCircle } from "../_libs/lucide-react.mjs";
+import { n as toast } from "../_libs/sonner.mjs";
+import { i as stringType, r as objectType } from "../_libs/zod.mjs";
+//#region node_modules/.nitro/vite/services/ssr/assets/contact-NU_btvn0.js
+var import_react = /* @__PURE__ */ __toESM(require_react());
+var import_jsx_runtime = require_jsx_runtime();
+var schema = objectType({
+	name: stringType().trim().min(2, "Enter your name").max(100),
+	email: stringType().trim().email("Enter a valid email").max(255),
+	message: stringType().trim().min(5, "Tell us a little more").max(1e3)
+});
+function ContactPage() {
+	const [submitting, setSubmitting] = (0, import_react.useState)(false);
+	const [company, setCompany] = (0, import_react.useState)(null);
+	const [pageSettings, setPageSettings] = (0, import_react.useState)(null);
+	useEffect(() => {
+		async function load() {
+			const { data: comp } = await supabase.from("settings").select("*").eq("key", "company_settings").maybeSingle();
+			if (comp && typeof comp.value === "object" && comp.value !== null) setCompany(comp.value);
+			const { data: page } = await supabase.from("settings").select("*").eq("key", "static_pages").maybeSingle();
+			if (page && page.value?.contact) setPageSettings(page.value.contact);
+		}
+		load();
+	}, []);
+	const phone = company?.phone || "+91 63977 10701";
+	const email = company?.email || "contact@explorehills.in";
+	const instagram = company?.social_instagram || "https://instagram.com/atul__nautiyal";
+	const instagramHandle = instagram.split("/").pop() || "atul__nautiyal";
+	const targetPhone = (company?.whatsapp || company?.phone || "+91 63977 10701").replace(/[^0-9]/g, "");
+	const founderName = company?.founder_name || "Atul Nautiyal";
+	const founderTitle = company?.founder_title || "Replies to every traveler personally.";
+	const founderImg = company?.founder_image || "/assets/founder-CgdqIl7A.jpg";
+	async function onSubmit(e) {
+		e.preventDefault();
+		const fd = new FormData(e.currentTarget);
+		const parsed = schema.safeParse({
+			name: fd.get("name"),
+			email: fd.get("email"),
+			message: fd.get("message")
+		});
+		if (!parsed.success) {
+			toast.error(parsed.error.issues[0]?.message ?? "Please check the form");
+			return;
+		}
+		setSubmitting(true);
+		try {
+			await supabase.from("leads").insert({
+				name: parsed.data.name,
+				email: parsed.data.email,
+				message: parsed.data.message,
+				lead_source: "website_contact_form",
+				lead_status: "new"
+			});
+		} catch (err) {
+			console.error("Error storing lead:", err);
+		}
+		const text = `Hi Explore Hills! I'm ${parsed.data.name} (${parsed.data.email}). ${parsed.data.message}`;
+		const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
+		window.open(url, "_blank", "noopener,noreferrer");
+		toast.success("Opening WhatsApp — we'll reply within hours.");
+		e.target.reset();
+		setSubmitting(false);
+	}
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(PageHero, {
+		eyebrow: "Get in touch",
+		title: pageSettings?.title ? pageSettings.title : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: ["Let's plan your ", /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+			className: "text-gradient",
+			children: "Himalayan story"
+		})] }),
+		subtitle: pageSettings?.subtitle || "Call, message or write — we usually reply within a few hours. Atul personally answers every WhatsApp.",
+		image: pageSettings?.image || "/assets/trip-hanol-Xat1BYtn.jpg"
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("section", {
+		className: "py-20 sm:py-28 bg-background",
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-12",
+			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "space-y-4",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
+						href: `https://wa.me/${targetPhone}`,
+						target: "_blank",
+						rel: "noreferrer",
+						className: "flex items-center gap-4 rounded-2xl bg-[oklch(0.62_0.16_150)] text-white p-5 shadow-glow hover:opacity-95 transition",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "grid h-12 w-12 place-items-center rounded-xl bg-white/15",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MessageCircle, { className: "h-5 w-5" })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "flex-1",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "font-semibold",
+									children: "Chat on WhatsApp"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "text-xs text-white/80",
+									children: [phone, " · Instant reply"]
+								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "text-sm font-semibold",
+								children: "Open →"
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
+						href: `tel:${targetPhone}`,
+						className: "flex items-center gap-4 rounded-2xl bg-card border border-border p-5 shadow-card hover-lift",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "grid h-12 w-12 place-items-center rounded-xl bg-primary text-primary-foreground",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Phone, { className: "h-5 w-5" })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "flex-1",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "font-semibold text-foreground",
+									children: "Call Now"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "text-xs text-muted-foreground",
+									children: [phone, " · Mon–Sun 9 AM – 9 PM"]
+								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "text-sm font-semibold text-primary",
+								children: "Dial →"
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
+						href: instagram,
+						target: "_blank",
+						rel: "noreferrer",
+						className: "flex items-center gap-4 rounded-2xl bg-card border border-border p-5 shadow-card hover-lift",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "grid h-12 w-12 place-items-center rounded-xl bg-[var(--gradient-ember)] text-ember-foreground",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Instagram, { className: "h-5 w-5" })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "flex-1",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "font-semibold text-foreground",
+									children: "Follow on Instagram"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+									className: "text-xs text-muted-foreground",
+									children: [instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`, " · Stories from the trail"]
+								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "text-sm font-semibold text-primary",
+								children: "Follow →"
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
+						href: `mailto:${email}`,
+						className: "flex items-center gap-4 rounded-2xl bg-card border border-border p-5 shadow-card hover-lift",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "grid h-12 w-12 place-items-center rounded-xl bg-forest text-forest-foreground",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mail, { className: "h-5 w-5" })
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+								className: "flex-1",
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "font-semibold text-foreground",
+									children: "Email Us"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+									className: "text-xs text-muted-foreground",
+									children: email
+								})]
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+								className: "text-sm font-semibold text-primary",
+								children: "Write →"
+							})
+						]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "mt-8 rounded-3xl overflow-hidden bg-ridge text-white relative",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+							className: "absolute inset-0 bg-aurora opacity-60",
+							"aria-hidden": true
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+							className: "relative p-6 flex items-center gap-5",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", {
+								src: founderImg,
+								alt: founderName,
+								loading: "lazy",
+								className: "h-20 w-20 rounded-2xl object-cover"
+							}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "text-xs uppercase tracking-widest text-white/70",
+									children: "Founder"
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
+									className: "font-display text-xl font-bold",
+									children: founderName
+								}),
+								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+									className: "text-sm text-white/80",
+									children: founderTitle
+								})
+							] })]
+						})]
+					})
+				]
+			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", {
+				onSubmit,
+				className: "rounded-3xl bg-card border border-border p-7 shadow-card space-y-5",
+				children: [
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
+						className: "font-display text-3xl font-bold text-foreground",
+						children: "Send us a note"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+						className: "mt-1 text-sm text-muted-foreground",
+						children: "We'll continue the chat on WhatsApp for the fastest reply."
+					})] }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
+						label: "Your name",
+						name: "name",
+						placeholder: "Atul Nautiyal"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Field, {
+						label: "Email",
+						name: "email",
+						type: "email",
+						placeholder: "you@example.com"
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", {
+						className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+						children: "Message"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("textarea", {
+						name: "message",
+						rows: 5,
+						placeholder: "Tell us what kind of trip you're dreaming of…",
+						className: "mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+					})] }),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("button", {
+						type: "submit",
+						disabled: submitting,
+						className: "w-full inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--gradient-ember)] px-6 py-3.5 text-sm font-semibold text-ember-foreground shadow-glow disabled:opacity-60",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(MessageCircle, { className: "h-4 w-4" }), " Send via WhatsApp"]
+					})
+				]
+			})]
+		})
+	})] });
+}
+function Field({ label, name, type = "text", placeholder }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", {
+		className: "text-xs font-semibold uppercase tracking-wider text-muted-foreground",
+		children: label
+	}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+		name,
+		type,
+		placeholder,
+		className: "mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+	})] });
+}
+//#endregion
+export { ContactPage as component };

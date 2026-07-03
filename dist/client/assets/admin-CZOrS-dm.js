@@ -1,1 +1,497 @@
-import{r as e,t}from"./jsx-runtime-DGeXAQPT.js";import{r as n,t as r}from"./createLucideIcon-Ctx0NuqD.js";import{n as i,t as a}from"./client-ByUYNggG.js";import{t as o}from"./users-CNMDuO64.js";import{f as s,t as c}from"./index-ByEr9w9j.js";import{t as l}from"./PageHero-BLDKAlfd.js";var u=r(`calendar-days`,[[`path`,{d:`M8 2v4`,key:`1cmpym`}],[`path`,{d:`M16 2v4`,key:`4m81vk`}],[`rect`,{width:`18`,height:`18`,x:`3`,y:`4`,rx:`2`,key:`1hopcy`}],[`path`,{d:`M3 10h18`,key:`8toen8`}],[`path`,{d:`M8 14h.01`,key:`6423bh`}],[`path`,{d:`M12 14h.01`,key:`1etili`}],[`path`,{d:`M16 14h.01`,key:`1gbofw`}],[`path`,{d:`M8 18h.01`,key:`lrp35t`}],[`path`,{d:`M12 18h.01`,key:`mhygvu`}],[`path`,{d:`M16 18h.01`,key:`kzsmim`}]]),d=r(`log-out`,[[`path`,{d:`m16 17 5-5-5-5`,key:`1bji2h`}],[`path`,{d:`M21 12H9`,key:`dn1m92`}],[`path`,{d:`M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4`,key:`1uf3rs`}]]),f=r(`search`,[[`path`,{d:`m21 21-4.34-4.34`,key:`14j7rj`}],[`circle`,{cx:`11`,cy:`11`,r:`8`,key:`4ej97u`}]]),p=r(`shield-alert`,[[`path`,{d:`M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z`,key:`oel41y`}],[`path`,{d:`M12 8v4`,key:`1got3b`}],[`path`,{d:`M12 16h.01`,key:`1drbdi`}]]),m=e(n()),h=t();function g(){let[e,t]=(0,m.useState)(`loading`),[n,r]=(0,m.useState)([]),[g,y]=(0,m.useState)(!1),[b,x]=(0,m.useState)(``),[S,C]=(0,m.useState)(`all`);(0,m.useEffect)(()=>{let e=!0;async function n(){let{data:n}=await a.auth.getUser();if(!n.user){e&&t(`signed-out`);return}let{data:r}=await a.from(`user_roles`).select(`role`).eq(`user_id`,n.user.id),i=r?.some(e=>e.role===`admin`);e&&t(i?`admin`:`not-admin`)}n();let{data:r}=a.auth.onAuthStateChange(e=>{(e===`SIGNED_IN`||e===`SIGNED_OUT`)&&n()});return()=>{e=!1,r.subscription.unsubscribe()}},[]),(0,m.useEffect)(()=>{e===`admin`&&(y(!0),a.from(`bookings`).select(`*`).order(`created_at`,{ascending:!1}).then(({data:e,error:t})=>{if(y(!1),t){s.error(`Failed to load bookings`);return}r(e??[])}))},[e]);let w=(0,m.useMemo)(()=>n.filter(e=>{if(S!==`all`&&e.status!==S)return!1;if(!b)return!0;let t=b.toLowerCase();return e.full_name.toLowerCase().includes(t)||e.email.toLowerCase().includes(t)||e.phone.toLowerCase().includes(t)||e.package_name.toLowerCase().includes(t)}),[n,b,S]),T=(0,m.useMemo)(()=>n.reduce((e,t)=>e+t.travelers,0),[n]),E=(0,m.useMemo)(()=>n.filter(e=>new Date(e.travel_date)>=new Date).length,[n]),D=(0,m.useMemo)(()=>n.filter(e=>e.status===`pending`).length,[n]);async function O(e,t){let i=n;r(n=>n.map(n=>n.id===e?{...n,status:t}:n));let{error:o}=await a.from(`bookings`).update({status:t}).eq(`id`,e);o?(r(i),s.error(`Could not update`)):s.success(`Marked ${t}`)}return e===`loading`?(0,h.jsx)(`div`,{className:`min-h-[100svh] grid place-items-center`,children:(0,h.jsx)(i,{className:`h-6 w-6 animate-spin text-primary`})}):e===`signed-out`?(0,h.jsx)(v,{}):e===`not-admin`?(0,h.jsx)(`section`,{className:`min-h-[100svh] grid place-items-center bg-background pt-32 pb-16 px-4`,children:(0,h.jsxs)(`div`,{className:`max-w-md text-center rounded-3xl bg-card border border-border p-10 shadow-card`,children:[(0,h.jsx)(`div`,{className:`mx-auto grid h-14 w-14 place-items-center rounded-full bg-destructive/10 text-destructive`,children:(0,h.jsx)(p,{className:`h-6 w-6`})}),(0,h.jsx)(`h1`,{className:`mt-5 font-display text-2xl font-bold text-foreground`,children:`Admin access required`}),(0,h.jsx)(`p`,{className:`mt-2 text-sm text-muted-foreground`,children:`Your account is signed in but doesn't have admin privileges. Ask Atul to grant you the admin role.`}),(0,h.jsxs)(`button`,{onClick:()=>a.auth.signOut(),className:`mt-6 inline-flex items-center gap-2 rounded-xl bg-secondary px-5 py-2.5 text-sm font-semibold text-foreground`,children:[(0,h.jsx)(d,{className:`h-4 w-4`}),` Sign out`]})]})}):(0,h.jsxs)(h.Fragment,{children:[(0,h.jsx)(l,{eyebrow:`Admin`,title:(0,h.jsxs)(h.Fragment,{children:[`Bookings `,(0,h.jsx)(`span`,{className:`text-gradient`,children:`control room`})]}),subtitle:`Live view of every booking submitted across the site.`,image:c}),(0,h.jsx)(`section`,{className:`py-12 bg-background`,children:(0,h.jsxs)(`div`,{className:`mx-auto max-w-7xl px-4 sm:px-6 space-y-8`,children:[(0,h.jsxs)(`div`,{className:`grid gap-4 sm:grid-cols-2 lg:grid-cols-4`,children:[(0,h.jsx)(_,{label:`Total bookings`,value:n.length.toString()}),(0,h.jsx)(_,{label:`Total travelers`,value:T.toString(),icon:(0,h.jsx)(o,{className:`h-4 w-4`})}),(0,h.jsx)(_,{label:`Upcoming departures`,value:E.toString(),icon:(0,h.jsx)(u,{className:`h-4 w-4`})}),(0,h.jsx)(_,{label:`Pending review`,value:D.toString(),highlight:!0})]}),(0,h.jsxs)(`div`,{className:`flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between`,children:[(0,h.jsxs)(`div`,{className:`relative flex-1 max-w-md`,children:[(0,h.jsx)(f,{className:`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`}),(0,h.jsx)(`input`,{value:b,onChange:e=>x(e.target.value),placeholder:`Search name, email, phone, package…`,className:`w-full pl-9 pr-4 py-2.5 rounded-xl border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring`})]}),(0,h.jsxs)(`div`,{className:`flex gap-2 flex-wrap`,children:[[`all`,`pending`,`confirmed`,`cancelled`].map(e=>(0,h.jsx)(`button`,{onClick:()=>C(e),className:`px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition ${S===e?`bg-primary text-primary-foreground`:`bg-secondary text-foreground hover:bg-accent`}`,children:e},e)),(0,h.jsxs)(`button`,{onClick:()=>a.auth.signOut(),className:`ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-secondary text-foreground hover:bg-accent`,children:[(0,h.jsx)(d,{className:`h-3.5 w-3.5`}),` Sign out`]})]})]}),(0,h.jsx)(`div`,{className:`rounded-2xl bg-card border border-border shadow-card overflow-hidden`,children:g?(0,h.jsx)(`div`,{className:`p-16 text-center`,children:(0,h.jsx)(i,{className:`h-6 w-6 animate-spin text-primary mx-auto`})}):w.length===0?(0,h.jsx)(`div`,{className:`p-16 text-center text-muted-foreground text-sm`,children:`No bookings match.`}):(0,h.jsx)(`div`,{className:`overflow-x-auto`,children:(0,h.jsxs)(`table`,{className:`w-full text-sm`,children:[(0,h.jsx)(`thead`,{className:`bg-secondary text-xs uppercase tracking-wider text-muted-foreground`,children:(0,h.jsxs)(`tr`,{children:[(0,h.jsx)(`th`,{className:`text-left p-4`,children:`Traveler`}),(0,h.jsx)(`th`,{className:`text-left p-4`,children:`Package`}),(0,h.jsx)(`th`,{className:`text-left p-4`,children:`Travel date`}),(0,h.jsx)(`th`,{className:`text-left p-4`,children:`Pax`}),(0,h.jsx)(`th`,{className:`text-left p-4`,children:`Status`}),(0,h.jsx)(`th`,{className:`text-right p-4`,children:`Action`})]})}),(0,h.jsx)(`tbody`,{children:w.map(e=>(0,h.jsxs)(`tr`,{className:`border-t border-border align-top hover:bg-secondary/40`,children:[(0,h.jsxs)(`td`,{className:`p-4`,children:[(0,h.jsx)(`div`,{className:`font-semibold text-foreground`,children:e.full_name}),(0,h.jsx)(`div`,{className:`text-xs text-muted-foreground`,children:e.email}),(0,h.jsx)(`div`,{className:`text-xs text-muted-foreground`,children:e.phone})]}),(0,h.jsxs)(`td`,{className:`p-4`,children:[(0,h.jsx)(`div`,{className:`font-medium text-foreground`,children:e.package_name}),e.special_requirements&&(0,h.jsx)(`div`,{className:`text-xs text-muted-foreground mt-1 max-w-xs line-clamp-2`,children:e.special_requirements})]}),(0,h.jsx)(`td`,{className:`p-4 text-foreground`,children:new Date(e.travel_date).toLocaleDateString(`en-IN`,{day:`2-digit`,month:`short`,year:`numeric`})}),(0,h.jsx)(`td`,{className:`p-4 text-foreground`,children:e.travelers}),(0,h.jsx)(`td`,{className:`p-4`,children:(0,h.jsx)(`span`,{className:`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${e.status===`confirmed`?`bg-forest/15 text-forest`:e.status===`cancelled`?`bg-destructive/15 text-destructive`:`bg-ember/15 text-ember`}`,children:e.status})}),(0,h.jsx)(`td`,{className:`p-4 text-right`,children:(0,h.jsxs)(`div`,{className:`inline-flex gap-2`,children:[e.status!==`confirmed`&&(0,h.jsx)(`button`,{onClick:()=>O(e.id,`confirmed`),className:`px-3 py-1.5 rounded-full text-xs font-semibold bg-forest text-forest-foreground hover:opacity-90`,children:`Confirm`}),e.status!==`cancelled`&&(0,h.jsx)(`button`,{onClick:()=>O(e.id,`cancelled`),className:`px-3 py-1.5 rounded-full text-xs font-semibold bg-secondary text-foreground hover:bg-accent`,children:`Cancel`})]})})]},e.id))})]})})})]})})]})}function _({label:e,value:t,icon:n,highlight:r}){return(0,h.jsxs)(`div`,{className:`rounded-2xl p-6 border ${r?`bg-[var(--gradient-ember)] text-ember-foreground border-transparent shadow-glow`:`bg-card border-border shadow-card`}`,children:[(0,h.jsxs)(`div`,{className:`flex items-center gap-2 text-xs uppercase tracking-wider ${r?`text-ember-foreground/80`:`text-muted-foreground`}`,children:[n,` `,e]}),(0,h.jsx)(`div`,{className:`mt-3 font-display text-4xl font-bold ${r?`text-ember-foreground`:`text-foreground`}`,children:t})]})}function v(){let[e,t]=(0,m.useState)(`signin`),[n,r]=(0,m.useState)(!1);async function o(t){t.preventDefault();let n=new FormData(t.currentTarget),i=String(n.get(`email`)??``).trim(),o=String(n.get(`password`)??``);if(!i||!o)return s.error(`Email and password required`);if(r(!0),e===`signup`){let{error:e}=await a.auth.signUp({email:i,password:o,options:{emailRedirectTo:window.location.origin+`/admin`}});if(r(!1),e)return s.error(e.message);s.success(`Account created. Ask Atul to grant admin access.`)}else{let{error:e}=await a.auth.signInWithPassword({email:i,password:o});if(r(!1),e)return s.error(e.message);s.success(`Signed in`)}}return(0,h.jsx)(`section`,{className:`min-h-[100svh] grid place-items-center px-4 pt-32 pb-16 bg-aurora`,children:(0,h.jsxs)(`form`,{onSubmit:o,className:`w-full max-w-md rounded-3xl glass-dark p-8 text-white shadow-elegant`,children:[(0,h.jsx)(`p`,{className:`text-xs font-semibold uppercase tracking-[0.2em] text-ember`,children:`Admin`}),(0,h.jsx)(`h1`,{className:`mt-3 font-display text-3xl font-bold`,children:e===`signin`?`Sign in`:`Create account`}),(0,h.jsx)(`p`,{className:`mt-2 text-sm text-white/70`,children:`Manage bookings and travelers.`}),(0,h.jsxs)(`div`,{className:`mt-6 space-y-3`,children:[(0,h.jsx)(`input`,{name:`email`,type:`email`,required:!0,placeholder:`Email`,className:`w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-ember`}),(0,h.jsx)(`input`,{name:`password`,type:`password`,required:!0,minLength:6,placeholder:`Password`,className:`w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-ember`})]}),(0,h.jsxs)(`button`,{disabled:n,type:`submit`,className:`mt-5 w-full rounded-xl bg-[var(--gradient-ember)] text-ember-foreground py-3 text-sm font-semibold shadow-glow disabled:opacity-60 inline-flex items-center justify-center gap-2`,children:[n&&(0,h.jsx)(i,{className:`h-4 w-4 animate-spin`}),e===`signin`?`Sign in`:`Create account`]}),(0,h.jsx)(`button`,{type:`button`,onClick:()=>t(e===`signin`?`signup`:`signin`),className:`mt-4 w-full text-xs text-white/70 hover:text-white`,children:e===`signin`?`Need an account? Sign up`:`Have an account? Sign in`})]})})}export{g as component};
+import { r as e, t } from "./jsx-runtime-DGeXAQPT.js";
+import { r as n, t as r } from "./createLucideIcon-Ctx0NuqD.js";
+import { n as i, t as a } from "./client-ByUYNggG.js";
+import { t as o } from "./users-CNMDuO64.js";
+import { f as s, t as c } from "./index-ByEr9w9j.js";
+import { t as l } from "./PageHero-BLDKAlfd.js";
+var u = r(`calendar-days`, [
+    [`path`, { d: `M8 2v4`, key: `1cmpym` }],
+    [`path`, { d: `M16 2v4`, key: `4m81vk` }],
+    [
+      `rect`,
+      { width: `18`, height: `18`, x: `3`, y: `4`, rx: `2`, key: `1hopcy` },
+    ],
+    [`path`, { d: `M3 10h18`, key: `8toen8` }],
+    [`path`, { d: `M8 14h.01`, key: `6423bh` }],
+    [`path`, { d: `M12 14h.01`, key: `1etili` }],
+    [`path`, { d: `M16 14h.01`, key: `1gbofw` }],
+    [`path`, { d: `M8 18h.01`, key: `lrp35t` }],
+    [`path`, { d: `M12 18h.01`, key: `mhygvu` }],
+    [`path`, { d: `M16 18h.01`, key: `kzsmim` }],
+  ]),
+  d = r(`log-out`, [
+    [`path`, { d: `m16 17 5-5-5-5`, key: `1bji2h` }],
+    [`path`, { d: `M21 12H9`, key: `dn1m92` }],
+    [`path`, { d: `M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4`, key: `1uf3rs` }],
+  ]),
+  f = r(`search`, [
+    [`path`, { d: `m21 21-4.34-4.34`, key: `14j7rj` }],
+    [`circle`, { cx: `11`, cy: `11`, r: `8`, key: `4ej97u` }],
+  ]),
+  p = r(`shield-alert`, [
+    [
+      `path`,
+      {
+        d: `M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z`,
+        key: `oel41y`,
+      },
+    ],
+    [`path`, { d: `M12 8v4`, key: `1got3b` }],
+    [`path`, { d: `M12 16h.01`, key: `1drbdi` }],
+  ]),
+  m = e(n()),
+  h = t();
+function g() {
+  let [e, t] = (0, m.useState)(`loading`),
+    [n, r] = (0, m.useState)([]),
+    [g, y] = (0, m.useState)(!1),
+    [b, x] = (0, m.useState)(``),
+    [S, C] = (0, m.useState)(`all`);
+  ((0, m.useEffect)(() => {
+    let e = !0;
+    async function n() {
+      let { data: n } = await a.auth.getUser();
+      if (!n.user) {
+        e && t(`signed-out`);
+        return;
+      }
+      let { data: r } = await a
+          .from(`user_roles`)
+          .select(`role`)
+          .eq(`user_id`, n.user.id),
+        i = r?.some((e) => e.role === `admin`);
+      e && t(i ? `admin` : `not-admin`);
+    }
+    n();
+    let { data: r } = a.auth.onAuthStateChange((e) => {
+      (e === `SIGNED_IN` || e === `SIGNED_OUT`) && n();
+    });
+    return () => {
+      ((e = !1), r.subscription.unsubscribe());
+    };
+  }, []),
+    (0, m.useEffect)(() => {
+      e === `admin` &&
+        (y(!0),
+        a
+          .from(`bookings`)
+          .select(`*`)
+          .order(`created_at`, { ascending: !1 })
+          .then(({ data: e, error: t }) => {
+            if ((y(!1), t)) {
+              s.error(`Failed to load bookings`);
+              return;
+            }
+            r(e ?? []);
+          }));
+    }, [e]));
+  let w = (0, m.useMemo)(
+      () =>
+        n.filter((e) => {
+          if (S !== `all` && e.status !== S) return !1;
+          if (!b) return !0;
+          let t = b.toLowerCase();
+          return (
+            e.full_name.toLowerCase().includes(t) ||
+            e.email.toLowerCase().includes(t) ||
+            e.phone.toLowerCase().includes(t) ||
+            e.package_name.toLowerCase().includes(t)
+          );
+        }),
+      [n, b, S],
+    ),
+    T = (0, m.useMemo)(() => n.reduce((e, t) => e + t.travelers, 0), [n]),
+    E = (0, m.useMemo)(
+      () => n.filter((e) => new Date(e.travel_date) >= new Date()).length,
+      [n],
+    ),
+    D = (0, m.useMemo)(
+      () => n.filter((e) => e.status === `pending`).length,
+      [n],
+    );
+  async function O(e, t) {
+    let i = n;
+    r((n) => n.map((n) => (n.id === e ? { ...n, status: t } : n)));
+    let { error: o } = await a
+      .from(`bookings`)
+      .update({ status: t })
+      .eq(`id`, e);
+    o ? (r(i), s.error(`Could not update`)) : s.success(`Marked ${t}`);
+  }
+  return e === `loading`
+    ? (0, h.jsx)(`div`, {
+        className: `min-h-[100svh] grid place-items-center`,
+        children: (0, h.jsx)(i, {
+          className: `h-6 w-6 animate-spin text-primary`,
+        }),
+      })
+    : e === `signed-out`
+      ? (0, h.jsx)(v, {})
+      : e === `not-admin`
+        ? (0, h.jsx)(`section`, {
+            className: `min-h-[100svh] grid place-items-center bg-background pt-32 pb-16 px-4`,
+            children: (0, h.jsxs)(`div`, {
+              className: `max-w-md text-center rounded-3xl bg-card border border-border p-10 shadow-card`,
+              children: [
+                (0, h.jsx)(`div`, {
+                  className: `mx-auto grid h-14 w-14 place-items-center rounded-full bg-destructive/10 text-destructive`,
+                  children: (0, h.jsx)(p, { className: `h-6 w-6` }),
+                }),
+                (0, h.jsx)(`h1`, {
+                  className: `mt-5 font-display text-2xl font-bold text-foreground`,
+                  children: `Admin access required`,
+                }),
+                (0, h.jsx)(`p`, {
+                  className: `mt-2 text-sm text-muted-foreground`,
+                  children: `Your account is signed in but doesn't have admin privileges. Ask Atul to grant you the admin role.`,
+                }),
+                (0, h.jsxs)(`button`, {
+                  onClick: () => a.auth.signOut(),
+                  className: `mt-6 inline-flex items-center gap-2 rounded-xl bg-secondary px-5 py-2.5 text-sm font-semibold text-foreground`,
+                  children: [
+                    (0, h.jsx)(d, { className: `h-4 w-4` }),
+                    ` Sign out`,
+                  ],
+                }),
+              ],
+            }),
+          })
+        : (0, h.jsxs)(h.Fragment, {
+            children: [
+              (0, h.jsx)(l, {
+                eyebrow: `Admin`,
+                title: (0, h.jsxs)(h.Fragment, {
+                  children: [
+                    `Bookings `,
+                    (0, h.jsx)(`span`, {
+                      className: `text-gradient`,
+                      children: `control room`,
+                    }),
+                  ],
+                }),
+                subtitle: `Live view of every booking submitted across the site.`,
+                image: c,
+              }),
+              (0, h.jsx)(`section`, {
+                className: `py-12 bg-background`,
+                children: (0, h.jsxs)(`div`, {
+                  className: `mx-auto max-w-7xl px-4 sm:px-6 space-y-8`,
+                  children: [
+                    (0, h.jsxs)(`div`, {
+                      className: `grid gap-4 sm:grid-cols-2 lg:grid-cols-4`,
+                      children: [
+                        (0, h.jsx)(_, {
+                          label: `Total bookings`,
+                          value: n.length.toString(),
+                        }),
+                        (0, h.jsx)(_, {
+                          label: `Total travelers`,
+                          value: T.toString(),
+                          icon: (0, h.jsx)(o, { className: `h-4 w-4` }),
+                        }),
+                        (0, h.jsx)(_, {
+                          label: `Upcoming departures`,
+                          value: E.toString(),
+                          icon: (0, h.jsx)(u, { className: `h-4 w-4` }),
+                        }),
+                        (0, h.jsx)(_, {
+                          label: `Pending review`,
+                          value: D.toString(),
+                          highlight: !0,
+                        }),
+                      ],
+                    }),
+                    (0, h.jsxs)(`div`, {
+                      className: `flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between`,
+                      children: [
+                        (0, h.jsxs)(`div`, {
+                          className: `relative flex-1 max-w-md`,
+                          children: [
+                            (0, h.jsx)(f, {
+                              className: `absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground`,
+                            }),
+                            (0, h.jsx)(`input`, {
+                              value: b,
+                              onChange: (e) => x(e.target.value),
+                              placeholder: `Search name, email, phone, package…`,
+                              className: `w-full pl-9 pr-4 py-2.5 rounded-xl border border-input bg-card text-sm focus:outline-none focus:ring-2 focus:ring-ring`,
+                            }),
+                          ],
+                        }),
+                        (0, h.jsxs)(`div`, {
+                          className: `flex gap-2 flex-wrap`,
+                          children: [
+                            [`all`, `pending`, `confirmed`, `cancelled`].map(
+                              (e) =>
+                                (0, h.jsx)(
+                                  `button`,
+                                  {
+                                    onClick: () => C(e),
+                                    className: `px-3 py-1.5 rounded-full text-xs font-semibold capitalize transition ${S === e ? `bg-primary text-primary-foreground` : `bg-secondary text-foreground hover:bg-accent`}`,
+                                    children: e,
+                                  },
+                                  e,
+                                ),
+                            ),
+                            (0, h.jsxs)(`button`, {
+                              onClick: () => a.auth.signOut(),
+                              className: `ml-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-secondary text-foreground hover:bg-accent`,
+                              children: [
+                                (0, h.jsx)(d, { className: `h-3.5 w-3.5` }),
+                                ` Sign out`,
+                              ],
+                            }),
+                          ],
+                        }),
+                      ],
+                    }),
+                    (0, h.jsx)(`div`, {
+                      className: `rounded-2xl bg-card border border-border shadow-card overflow-hidden`,
+                      children: g
+                        ? (0, h.jsx)(`div`, {
+                            className: `p-16 text-center`,
+                            children: (0, h.jsx)(i, {
+                              className: `h-6 w-6 animate-spin text-primary mx-auto`,
+                            }),
+                          })
+                        : w.length === 0
+                          ? (0, h.jsx)(`div`, {
+                              className: `p-16 text-center text-muted-foreground text-sm`,
+                              children: `No bookings match.`,
+                            })
+                          : (0, h.jsx)(`div`, {
+                              className: `overflow-x-auto`,
+                              children: (0, h.jsxs)(`table`, {
+                                className: `w-full text-sm`,
+                                children: [
+                                  (0, h.jsx)(`thead`, {
+                                    className: `bg-secondary text-xs uppercase tracking-wider text-muted-foreground`,
+                                    children: (0, h.jsxs)(`tr`, {
+                                      children: [
+                                        (0, h.jsx)(`th`, {
+                                          className: `text-left p-4`,
+                                          children: `Traveler`,
+                                        }),
+                                        (0, h.jsx)(`th`, {
+                                          className: `text-left p-4`,
+                                          children: `Package`,
+                                        }),
+                                        (0, h.jsx)(`th`, {
+                                          className: `text-left p-4`,
+                                          children: `Travel date`,
+                                        }),
+                                        (0, h.jsx)(`th`, {
+                                          className: `text-left p-4`,
+                                          children: `Pax`,
+                                        }),
+                                        (0, h.jsx)(`th`, {
+                                          className: `text-left p-4`,
+                                          children: `Status`,
+                                        }),
+                                        (0, h.jsx)(`th`, {
+                                          className: `text-right p-4`,
+                                          children: `Action`,
+                                        }),
+                                      ],
+                                    }),
+                                  }),
+                                  (0, h.jsx)(`tbody`, {
+                                    children: w.map((e) =>
+                                      (0, h.jsxs)(
+                                        `tr`,
+                                        {
+                                          className: `border-t border-border align-top hover:bg-secondary/40`,
+                                          children: [
+                                            (0, h.jsxs)(`td`, {
+                                              className: `p-4`,
+                                              children: [
+                                                (0, h.jsx)(`div`, {
+                                                  className: `font-semibold text-foreground`,
+                                                  children: e.full_name,
+                                                }),
+                                                (0, h.jsx)(`div`, {
+                                                  className: `text-xs text-muted-foreground`,
+                                                  children: e.email,
+                                                }),
+                                                (0, h.jsx)(`div`, {
+                                                  className: `text-xs text-muted-foreground`,
+                                                  children: e.phone,
+                                                }),
+                                              ],
+                                            }),
+                                            (0, h.jsxs)(`td`, {
+                                              className: `p-4`,
+                                              children: [
+                                                (0, h.jsx)(`div`, {
+                                                  className: `font-medium text-foreground`,
+                                                  children: e.package_name,
+                                                }),
+                                                e.special_requirements &&
+                                                  (0, h.jsx)(`div`, {
+                                                    className: `text-xs text-muted-foreground mt-1 max-w-xs line-clamp-2`,
+                                                    children:
+                                                      e.special_requirements,
+                                                  }),
+                                              ],
+                                            }),
+                                            (0, h.jsx)(`td`, {
+                                              className: `p-4 text-foreground`,
+                                              children: new Date(
+                                                e.travel_date,
+                                              ).toLocaleDateString(`en-IN`, {
+                                                day: `2-digit`,
+                                                month: `short`,
+                                                year: `numeric`,
+                                              }),
+                                            }),
+                                            (0, h.jsx)(`td`, {
+                                              className: `p-4 text-foreground`,
+                                              children: e.travelers,
+                                            }),
+                                            (0, h.jsx)(`td`, {
+                                              className: `p-4`,
+                                              children: (0, h.jsx)(`span`, {
+                                                className: `inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize ${e.status === `confirmed` ? `bg-forest/15 text-forest` : e.status === `cancelled` ? `bg-destructive/15 text-destructive` : `bg-ember/15 text-ember`}`,
+                                                children: e.status,
+                                              }),
+                                            }),
+                                            (0, h.jsx)(`td`, {
+                                              className: `p-4 text-right`,
+                                              children: (0, h.jsxs)(`div`, {
+                                                className: `inline-flex gap-2`,
+                                                children: [
+                                                  e.status !== `confirmed` &&
+                                                    (0, h.jsx)(`button`, {
+                                                      onClick: () =>
+                                                        O(e.id, `confirmed`),
+                                                      className: `px-3 py-1.5 rounded-full text-xs font-semibold bg-forest text-forest-foreground hover:opacity-90`,
+                                                      children: `Confirm`,
+                                                    }),
+                                                  e.status !== `cancelled` &&
+                                                    (0, h.jsx)(`button`, {
+                                                      onClick: () =>
+                                                        O(e.id, `cancelled`),
+                                                      className: `px-3 py-1.5 rounded-full text-xs font-semibold bg-secondary text-foreground hover:bg-accent`,
+                                                      children: `Cancel`,
+                                                    }),
+                                                ],
+                                              }),
+                                            }),
+                                          ],
+                                        },
+                                        e.id,
+                                      ),
+                                    ),
+                                  }),
+                                ],
+                              }),
+                            }),
+                    }),
+                  ],
+                }),
+              }),
+            ],
+          });
+}
+function _({ label: e, value: t, icon: n, highlight: r }) {
+  return (0, h.jsxs)(`div`, {
+    className: `rounded-2xl p-6 border ${r ? `bg-[var(--gradient-ember)] text-ember-foreground border-transparent shadow-glow` : `bg-card border-border shadow-card`}`,
+    children: [
+      (0, h.jsxs)(`div`, {
+        className: `flex items-center gap-2 text-xs uppercase tracking-wider ${r ? `text-ember-foreground/80` : `text-muted-foreground`}`,
+        children: [n, ` `, e],
+      }),
+      (0, h.jsx)(`div`, {
+        className: `mt-3 font-display text-4xl font-bold ${r ? `text-ember-foreground` : `text-foreground`}`,
+        children: t,
+      }),
+    ],
+  });
+}
+function v() {
+  let [e, t] = (0, m.useState)(`signin`),
+    [n, r] = (0, m.useState)(!1);
+  async function o(t) {
+    t.preventDefault();
+    let n = new FormData(t.currentTarget),
+      i = String(n.get(`email`) ?? ``).trim(),
+      o = String(n.get(`password`) ?? ``);
+    if (!i || !o) return s.error(`Email and password required`);
+    if ((r(!0), e === `signup`)) {
+      let { error: e } = await a.auth.signUp({
+        email: i,
+        password: o,
+        options: { emailRedirectTo: window.location.origin + `/admin` },
+      });
+      if ((r(!1), e)) return s.error(e.message);
+      s.success(`Account created. Ask Atul to grant admin access.`);
+    } else {
+      let { error: e } = await a.auth.signInWithPassword({
+        email: i,
+        password: o,
+      });
+      if ((r(!1), e)) return s.error(e.message);
+      s.success(`Signed in`);
+    }
+  }
+  return (0, h.jsx)(`section`, {
+    className: `min-h-[100svh] grid place-items-center px-4 pt-32 pb-16 bg-aurora`,
+    children: (0, h.jsxs)(`form`, {
+      onSubmit: o,
+      className: `w-full max-w-md rounded-3xl glass-dark p-8 text-white shadow-elegant`,
+      children: [
+        (0, h.jsx)(`p`, {
+          className: `text-xs font-semibold uppercase tracking-[0.2em] text-ember`,
+          children: `Admin`,
+        }),
+        (0, h.jsx)(`h1`, {
+          className: `mt-3 font-display text-3xl font-bold`,
+          children: e === `signin` ? `Sign in` : `Create account`,
+        }),
+        (0, h.jsx)(`p`, {
+          className: `mt-2 text-sm text-white/70`,
+          children: `Manage bookings and travelers.`,
+        }),
+        (0, h.jsxs)(`div`, {
+          className: `mt-6 space-y-3`,
+          children: [
+            (0, h.jsx)(`input`, {
+              name: `email`,
+              type: `email`,
+              required: !0,
+              placeholder: `Email`,
+              className: `w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-ember`,
+            }),
+            (0, h.jsx)(`input`, {
+              name: `password`,
+              type: `password`,
+              required: !0,
+              minLength: 6,
+              placeholder: `Password`,
+              className: `w-full rounded-xl bg-white/10 border border-white/20 px-4 py-3 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-ember`,
+            }),
+          ],
+        }),
+        (0, h.jsxs)(`button`, {
+          disabled: n,
+          type: `submit`,
+          className: `mt-5 w-full rounded-xl bg-[var(--gradient-ember)] text-ember-foreground py-3 text-sm font-semibold shadow-glow disabled:opacity-60 inline-flex items-center justify-center gap-2`,
+          children: [
+            n && (0, h.jsx)(i, { className: `h-4 w-4 animate-spin` }),
+            e === `signin` ? `Sign in` : `Create account`,
+          ],
+        }),
+        (0, h.jsx)(`button`, {
+          type: `button`,
+          onClick: () => t(e === `signin` ? `signup` : `signin`),
+          className: `mt-4 w-full text-xs text-white/70 hover:text-white`,
+          children:
+            e === `signin`
+              ? `Need an account? Sign up`
+              : `Have an account? Sign in`,
+        }),
+      ],
+    }),
+  });
+}
+export { g as component };

@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { PageHero } from "@/components/site/PageHero";
 import hero from "@/assets/hero-himalayas.jpg";
 import founder from "@/assets/founder.jpg";
 import { Compass, HeartHandshake, Leaf, Sparkles } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -50,17 +52,36 @@ const values = [
 ];
 
 function AboutPage() {
+  const [content, setContent] = useState<any>(null);
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from("settings")
+        .select("*")
+        .eq("key", "static_pages")
+        .maybeSingle();
+      if (data && typeof data.value === "object" && data.value !== null) {
+        const val = data.value as any;
+        if (val.about) setContent(val.about);
+      }
+    }
+    load();
+  }, []);
+
   return (
     <>
       <PageHero
         eyebrow="Our Story"
         title={
-          <>
-            Born in the hills, built for{" "}
-            <span className="text-gradient">travelers</span>
-          </>
+          content?.title ? content.title : (
+            <>
+              Born in the hills, built for{" "}
+              <span className="text-gradient">travelers</span>
+            </>
+          )
         }
-        subtitle="Explore Hills is a young Uttarakhand-based travel startup on a mission to share the real Himalayas with the world — one small group at a time."
+        subtitle={content?.subtitle || "Explore Hills is a young Uttarakhand-based travel startup on a mission to share the real Himalayas with the world — one small group at a time."}
         image={hero}
       />
 
@@ -119,9 +140,7 @@ function AboutPage() {
               Authentic, responsible, unforgettable.
             </h3>
             <p className="mt-4 text-white/75">
-              To open Uttarakhand's hidden corners to travelers in a way that
-              uplifts local communities, protects fragile ecosystems and leaves
-              every guest with a story worth telling.
+              {content?.mission || "To open Uttarakhand's hidden corners to travelers in a way that uplifts local communities, protects fragile ecosystems and leaves every guest with a story worth telling."}
             </p>
           </div>
           <div className="rounded-3xl glass-dark p-8">
@@ -132,9 +151,7 @@ function AboutPage() {
               A new chapter for mountain tourism.
             </h3>
             <p className="mt-4 text-white/75">
-              To become India's most trusted small-group Himalayan travel brand
-              — a name travelers, villages and the mountains themselves can rely
-              on.
+              {content?.vision || "To become India's most trusted small-group Himalayan travel brand — a name travelers, villages and the mountains themselves can rely on."}
             </p>
           </div>
         </div>

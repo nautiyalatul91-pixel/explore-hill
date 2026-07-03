@@ -6,6 +6,7 @@ import { Instagram, Mail, MessageCircle, Phone } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -38,8 +39,43 @@ const schema = z.object({
 
 function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
+  const [company, setCompany] = useState<any>(null);
+  const [pageSettings, setPageSettings] = useState<any>(null);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    async function load() {
+      const { data: comp } = await supabase
+        .from("settings")
+        .select("*")
+        .eq("key", "company_settings")
+        .maybeSingle();
+      if (comp && typeof comp.value === "object" && comp.value !== null) {
+        setCompany(comp.value);
+      }
+
+      const { data: page } = await supabase
+        .from("settings")
+        .select("*")
+        .eq("key", "static_pages")
+        .maybeSingle();
+      if (page && page.value?.contact) {
+        setPageSettings(page.value.contact);
+      }
+    }
+    load();
+  }, []);
+
+  const phone = company?.phone || "+91 63977 10701";
+  const email = company?.email || "contact@explorehills.in";
+  const instagram = company?.social_instagram || "https://instagram.com/atul__nautiyal";
+  const instagramHandle = instagram.split("/").pop() || "atul__nautiyal";
+  const targetPhone = (company?.whatsapp || company?.phone || "+91 63977 10701").replace(/[^0-9]/g, "");
+
+  const founderName = company?.founder_name || "Atul Nautiyal";
+  const founderTitle = company?.founder_title || "Replies to every traveler personally.";
+  const founderImg = company?.founder_image || founder;
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const parsed = schema.safeParse({
@@ -52,8 +88,19 @@ function ContactPage() {
       return;
     }
     setSubmitting(true);
+    try {
+      await supabase.from("leads").insert({
+        name: parsed.data.name,
+        email: parsed.data.email,
+        message: parsed.data.message,
+        lead_source: "website_contact_form",
+        lead_status: "new",
+      });
+    } catch (err) {
+      console.error("Error storing lead:", err);
+    }
     const text = `Hi Explore Hills! I'm ${parsed.data.name} (${parsed.data.email}). ${parsed.data.message}`;
-    const url = `https://wa.me/916397710701?text=${encodeURIComponent(text)}`;
+    const url = `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
     toast.success("Opening WhatsApp — we'll reply within hours.");
     (e.target as HTMLFormElement).reset();
@@ -65,20 +112,21 @@ function ContactPage() {
       <PageHero
         eyebrow="Get in touch"
         title={
-          <>
-            Let's plan your{" "}
-            <span className="text-gradient">Himalayan story</span>
-          </>
+          pageSettings?.title ? pageSettings.title : (
+            <>
+              Let's plan your <span className="text-gradient">Himalayan story</span>
+            </>
+          )
         }
-        subtitle="Call, message or write — we usually reply within a few hours. Atul personally answers every WhatsApp."
-        image={hero}
+        subtitle={pageSettings?.subtitle || "Call, message or write — we usually reply within a few hours. Atul personally answers every WhatsApp."}
+        image={pageSettings?.image || hero}
       />
 
       <section className="py-20 sm:py-28 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 grid lg:grid-cols-2 gap-12">
           <div className="space-y-4">
             <a
-              href="https://wa.me/916397710701"
+              href={`https://wa.me/${targetPhone}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-4 rounded-2xl bg-[oklch(0.62_0.16_150)] text-white p-5 shadow-glow hover:opacity-95 transition"
@@ -89,13 +137,13 @@ function ContactPage() {
               <div className="flex-1">
                 <div className="font-semibold">Chat on WhatsApp</div>
                 <div className="text-xs text-white/80">
-                  +91 63977 10701 · Instant reply
+                  {phone} · Instant reply
                 </div>
               </div>
               <span className="text-sm font-semibold">Open →</span>
             </a>
             <a
-              href="tel:+916397710701"
+              href={`tel:${targetPhone}`}
               className="flex items-center gap-4 rounded-2xl bg-card border border-border p-5 shadow-card hover-lift"
             >
               <span className="grid h-12 w-12 place-items-center rounded-xl bg-primary text-primary-foreground">
@@ -104,13 +152,13 @@ function ContactPage() {
               <div className="flex-1">
                 <div className="font-semibold text-foreground">Call Now</div>
                 <div className="text-xs text-muted-foreground">
-                  +91 63977 10701 · Mon–Sun 9 AM – 9 PM
+                  {phone} · Mon–Sun 9 AM – 9 PM
                 </div>
               </div>
               <span className="text-sm font-semibold text-primary">Dial →</span>
             </a>
             <a
-              href="https://instagram.com/atul__nautiyal"
+              href={instagram}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-4 rounded-2xl bg-card border border-border p-5 shadow-card hover-lift"
@@ -123,7 +171,7 @@ function ContactPage() {
                   Follow on Instagram
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  @atul__nautiyal · Stories from the trail
+                  {instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`} · Stories from the trail
                 </div>
               </div>
               <span className="text-sm font-semibold text-primary">
@@ -131,7 +179,7 @@ function ContactPage() {
               </span>
             </a>
             <a
-              href="mailto:contact@explorehills.in"
+              href={`mailto:${email}`}
               className="flex items-center gap-4 rounded-2xl bg-card border border-border p-5 shadow-card hover-lift"
             >
               <span className="grid h-12 w-12 place-items-center rounded-xl bg-forest text-forest-foreground">
@@ -140,7 +188,7 @@ function ContactPage() {
               <div className="flex-1">
                 <div className="font-semibold text-foreground">Email Us</div>
                 <div className="text-xs text-muted-foreground">
-                  contact@explorehills.in
+                  {email}
                 </div>
               </div>
               <span className="text-sm font-semibold text-primary">
@@ -155,8 +203,8 @@ function ContactPage() {
               />
               <div className="relative p-6 flex items-center gap-5">
                 <img
-                  src={founder}
-                  alt="Atul Nautiyal"
+                  src={founderImg}
+                  alt={founderName}
                   loading="lazy"
                   className="h-20 w-20 rounded-2xl object-cover"
                 />
@@ -165,10 +213,10 @@ function ContactPage() {
                     Founder
                   </p>
                   <h3 className="font-display text-xl font-bold">
-                    Atul Nautiyal
+                    {founderName}
                   </h3>
                   <p className="text-sm text-white/80">
-                    Replies to every traveler personally.
+                    {founderTitle}
                   </p>
                 </div>
               </div>

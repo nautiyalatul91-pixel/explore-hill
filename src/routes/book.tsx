@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { PageHero } from "@/components/site/PageHero";
 import hero from "@/assets/gallery-camping.jpg";
-import { allPackages, inclusions } from "@/lib/packages";
+import { usePackages, inclusions } from "@/lib/packages";
 import { z } from "zod";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, Loader2, ShieldCheck } from "lucide-react";
@@ -51,12 +51,140 @@ const formSchema = z.object({
     .or(z.literal("")),
 });
 
+type Departure = {
+  id: string;
+  package_slug: string;
+  start_date: string;
+  end_date: string;
+  max_seats: number;
+  booked_seats: number;
+  status: string;
+  created_at: string;
+};
+
+function formatBatchDates(startStr: string, endStr: string) {
+  const start = new Date(startStr);
+  const end = new Date(endStr);
+  const startDay = start.toLocaleDateString("en-IN", { day: "numeric" });
+  const startMonth = start.toLocaleDateString("en-IN", { month: "short" });
+  const endDay = end.toLocaleDateString("en-IN", { day: "numeric" });
+  const endMonth = end.toLocaleDateString("en-IN", { month: "short" });
+
+  if (startMonth === endMonth) {
+    return `${startDay} - ${endDay} ${startMonth}`;
+  } else {
+    return `${startDay} ${startMonth} - ${endDay} ${endMonth}`;
+  }
+}
+
 function BookPage() {
+  const { packages } = usePackages();
   const search = Route.useSearch();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<{ id: string; name: string } | null>(null);
-  const today = new Date().toISOString().split("T")[0];
+
+  const [departures, setDepartures] = useState<Departure[]>([]);
+  const [loadingDepartures, setLoadingDepartures] = useState(true);
+  const [selectedPkgSlug, setSelectedPkgSlug] = useState(search.pkg ?? "");
+  const [selectedTravelDate, setSelectedTravelDate] = useState("");
+
+  const [couponCode, setCouponCode] = useState("");
+  const [checkingCoupon, setCheckingCoupon] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    id: string;
+    code: string;
+    discount_type: "percentage" | "fixed";
+    discount_value: number;
+  } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [numTravelers, setNumTravelers] = useState(2);
+
+  async function applyCoupon() {
+    if (!couponCode.trim()) return;
+    setCheckingCoupon(true);
+    setCouponError(null);
+    try {
+      const codeUpper = couponCode.trim().toUpperCase();
+      const { data, error } = await supabase
+        .from("coupons")
+        .select("*")
+        .eq("code", codeUpper)
+        .eq("status", "active")
+        .maybeSingle();
+
+      if (error || !data) {
+        setCouponError("Invalid or inactive coupon code.");
+        setAppliedCoupon(null);
+        return;
+      }
+
+      if (data.expiry_date && new Date(data.expiry_date) < new Date()) {
+        setCouponError("This coupon code has expired.");
+        setAppliedCoupon(null);
+        return;
+      }
+
+      if (data.max_uses && data.used_count >= data.max_uses) {
+        setCouponError("This coupon code limit has been reached.");
+        setAppliedCoupon(null);
+        return;
+      }
+
+      const pkg = packages.find((p) => p.slug === selectedPkgSlug);
+      const bookingTotal = pkg ? pkg.price * numTravelers : 0;
+      if (data.min_booking_amount && bookingTotal < data.min_booking_amount) {
+        setCouponError(`Min booking amount for this coupon is Rs. ${data.min_booking_amount}.`);
+        setAppliedCoupon(null);
+        return;
+      }
+
+      setAppliedCoupon({
+        id: data.id,
+        code: data.code,
+        discount_type: data.discount_type,
+        discount_value: data.discount_value,
+      });
+      toast.success("Coupon code applied successfully!");
+    } catch (err) {
+      console.error(err);
+      setCouponError("Error checking coupon.");
+    } finally {
+      setCheckingCoupon(false);
+    }
+  }
+
+  useEffect(() => {
+    async function getDepartures() {
+      const todayDate = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("departures")
+        .select("*")
+        .gte("start_date", todayDate)
+        .neq("status", "cancelled")
+        .order("start_date", { ascending: true });
+      if (error) {
+        console.error(error);
+        toast.error("Failed to load departure dates");
+      } else {
+        setDepartures((data as Departure[]) ?? []);
+      }
+      setLoadingDepartures(false);
+    }
+    getDepartures();
+  }, []);
+
+  const availableDepartures = useMemo(() => {
+    return departures.filter((d) => d.package_slug === selectedPkgSlug);
+  }, [departures, selectedPkgSlug]);
+
+  const selectedDeparture = useMemo(() => {
+    return availableDepartures.find((d) => d.start_date === selectedTravelDate);
+  }, [availableDepartures, selectedTravelDate]);
+
+  const seatsLeft = selectedDeparture
+    ? selectedDeparture.max_seats - selectedDeparture.booked_seats
+    : 15;
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -69,11 +197,18 @@ function BookPage() {
       );
       return;
     }
-    const pkg = allPackages.find((p) => p.slug === parsed.data.package_slug);
+    const pkg = packages.find((p) => p.slug === parsed.data.package_slug);
     if (!pkg) {
       toast.error("Please pick a valid package");
       return;
     }
+
+    // Additional client-side validation for quota
+    if (parsed.data.travelers > seatsLeft) {
+      toast.error(`Only ${seatsLeft} seats left for this departure date.`);
+      return;
+    }
+
     const bookingId =
       typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
         ? crypto.randomUUID()
@@ -81,6 +216,17 @@ function BookPage() {
 
     setSubmitting(true);
     try {
+      const baseTotal = pkg.price * numTravelers;
+      let discountAmount = 0;
+      if (appliedCoupon) {
+        if (appliedCoupon.discount_type === "percentage") {
+          discountAmount = Math.round((baseTotal * appliedCoupon.discount_value) / 100);
+        } else {
+          discountAmount = appliedCoupon.discount_value;
+        }
+      }
+      const finalTotal = Math.max(0, baseTotal - discountAmount);
+
       const payload: {
         id?: string;
         full_name: string;
@@ -91,6 +237,9 @@ function BookPage() {
         travel_date: string;
         travelers: number;
         special_requirements: string | null;
+        coupon_code: string | null;
+        discount_amount: number;
+        total_price: number;
       } = {
         full_name: parsed.data.full_name,
         phone: parsed.data.phone,
@@ -100,6 +249,9 @@ function BookPage() {
         travel_date: parsed.data.travel_date,
         travelers: parsed.data.travelers,
         special_requirements: parsed.data.special_requirements || null,
+        coupon_code: appliedCoupon ? appliedCoupon.code : null,
+        discount_amount: discountAmount,
+        total_price: finalTotal,
       };
 
       if (bookingId) {
@@ -113,6 +265,21 @@ function BookPage() {
         toast.error("Could not submit booking: " + error.message);
         return;
       }
+
+      if (appliedCoupon) {
+        const { data: cData } = await supabase
+          .from("coupons")
+          .select("used_count")
+          .eq("id", appliedCoupon.id)
+          .maybeSingle();
+        if (cData) {
+          await supabase
+            .from("coupons")
+            .update({ used_count: (cData.used_count || 0) + 1 })
+            .eq("id", appliedCoupon.id);
+        }
+      }
+
       toast.success("Booking received! We'll confirm on WhatsApp shortly.");
       setDone({ id: bookingId || "Pending", name: pkg.name });
     } catch (err) {
@@ -213,15 +380,19 @@ function BookPage() {
               </label>
               <select
                 name="package_slug"
-                defaultValue={search.pkg ?? ""}
+                value={selectedPkgSlug}
+                onChange={(e) => {
+                  setSelectedPkgSlug(e.target.value);
+                  setSelectedTravelDate("");
+                }}
                 required
-                className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
               >
                 <option value="" disabled>
                   Choose your adventure…
                 </option>
                 <optgroup label="Treks">
-                  {allPackages
+                  {packages
                     .filter((p) => p.category === "trek")
                     .map((p) => (
                       <option key={p.slug} value={p.slug}>
@@ -230,7 +401,7 @@ function BookPage() {
                     ))}
                 </optgroup>
                 <optgroup label="Trips">
-                  {allPackages
+                  {packages
                     .filter((p) => p.category === "trip")
                     .map((p) => (
                       <option key={p.slug} value={p.slug}>
@@ -242,22 +413,64 @@ function BookPage() {
             </div>
 
             <div className="grid sm:grid-cols-2 gap-5">
-              <Field
-                label="Travel Date"
-                name="travel_date"
-                type="date"
-                min={today}
-                required
-              />
-              <Field
-                label="Number of Travelers"
-                name="travelers"
-                type="number"
-                min={1}
-                max={15}
-                defaultValue="2"
-                required
-              />
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-semibold">
+                  Travel Date
+                </label>
+                <select
+                  name="travel_date"
+                  value={selectedTravelDate}
+                  onChange={(e) => setSelectedTravelDate(e.target.value)}
+                  required
+                  className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                >
+                  <option value="" disabled>
+                    {loadingDepartures
+                      ? "Loading dates..."
+                      : availableDepartures.length === 0
+                        ? "No batches scheduled"
+                        : "Choose a departure date…"}
+                  </option>
+                  {availableDepartures.map((d) => {
+                    const remaining = d.max_seats - d.booked_seats;
+                    const isFull = remaining <= 0 || d.status === "full";
+                    return (
+                      <option key={d.id} value={d.start_date} disabled={isFull}>
+                        {formatBatchDates(d.start_date, d.end_date)}{" "}
+                        {isFull ? "(Full)" : `(${remaining} seats left)`}
+                      </option>
+                    );
+                  })}
+                </select>
+                {selectedPkgSlug &&
+                  availableDepartures.length === 0 &&
+                  !loadingDepartures && (
+                    <p className="text-[11px] text-destructive mt-1.5 leading-normal">
+                      No scheduled departures currently available for this
+                      adventure. Please choose another package.
+                    </p>
+                  )}
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground font-semibold">
+                  Number of Travelers
+                </label>
+                <input
+                  name="travelers"
+                  type="number"
+                  min={1}
+                  max={seatsLeft > 0 ? seatsLeft : 15}
+                  value={numTravelers}
+                  onChange={(e) => setNumTravelers(Math.max(1, Number(e.target.value)))}
+                  required
+                  className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                />
+                {selectedDeparture && (
+                  <p className="text-[11px] text-muted-foreground mt-1.5">
+                    Maximum {seatsLeft} travelers allowed for this date.
+                  </p>
+                )}
+              </div>
             </div>
 
             <div>
@@ -271,6 +484,79 @@ function BookPage() {
                 className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
+
+            {/* Coupon Code Section */}
+            <div className="border-t border-border pt-5 space-y-3">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Apply Promo Code / Coupon
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="e.g. TREK10"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  className="w-full rounded-xl border border-input bg-background px-4 py-2 text-sm uppercase text-foreground placeholder:normal-case focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                <button
+                  type="button"
+                  onClick={applyCoupon}
+                  disabled={checkingCoupon || !couponCode.trim()}
+                  className="rounded-xl bg-primary text-primary-foreground px-5 py-2 text-xs font-semibold hover:opacity-90 transition disabled:opacity-50 shrink-0 cursor-pointer"
+                >
+                  {checkingCoupon ? "Applying..." : "Apply Code"}
+                </button>
+              </div>
+              {couponError && (
+                <p className="text-xs text-red-500 font-semibold">{couponError}</p>
+              )}
+              {appliedCoupon && (
+                <p className="text-xs text-green-600 font-bold flex items-center gap-1">
+                  ✓ Code {appliedCoupon.code} applied! ({appliedCoupon.discount_type === "percentage" ? `${appliedCoupon.discount_value}% Off` : `Rs. ${appliedCoupon.discount_value} Off`})
+                </p>
+              )}
+            </div>
+
+            {/* Price breakdown details */}
+            {selectedPkgSlug && (
+              <div className="rounded-2xl bg-muted/20 border border-border p-5 space-y-2.5 text-sm text-foreground">
+                <h4 className="font-bold text-xs uppercase text-muted-foreground tracking-wider mb-1">
+                  Fare Summary
+                </h4>
+                {(() => {
+                  const pkg = packages.find((p) => p.slug === selectedPkgSlug);
+                  if (!pkg) return null;
+                  const baseTotal = pkg.price * numTravelers;
+                  let discount = 0;
+                  if (appliedCoupon) {
+                    if (appliedCoupon.discount_type === "percentage") {
+                      discount = Math.round((baseTotal * appliedCoupon.discount_value) / 100);
+                    } else {
+                      discount = appliedCoupon.discount_value;
+                    }
+                  }
+                  const final = Math.max(0, baseTotal - discount);
+                  return (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">{pkg.name} (x{numTravelers})</span>
+                        <span className="font-semibold">Rs. {baseTotal}</span>
+                      </div>
+                      {appliedCoupon && (
+                        <div className="flex justify-between text-green-600 font-semibold">
+                          <span>Discount Applied ({appliedCoupon.code})</span>
+                          <span>- Rs. {discount}</span>
+                        </div>
+                      )}
+                      <div className="border-t border-border pt-2 mt-1.5 flex justify-between font-bold text-base text-primary">
+                        <span>Total Payable</span>
+                        <span>Rs. {final}</span>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
 
             <button
               type="submit"

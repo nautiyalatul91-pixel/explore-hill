@@ -3,6 +3,8 @@ import trekKedarkantha from "@/assets/trek-kedarkantha.jpg";
 import trekNagtibba from "@/assets/trek-nagtibba.jpg";
 import trekYulla from "@/assets/trek-yulla.jpg";
 import tripHanol from "@/assets/trip-hanol.jpg";
+import tripHanol2 from "@/assets/trip-hanol-2.jpg";
+import tripHanol3 from "@/assets/trip-hanol-3.jpg";
 import tripMahasu from "@/assets/trip-mahasu.jpg";
 
 export type Package = {
@@ -14,9 +16,14 @@ export type Package = {
   priceLabel: string;
   tagline: string;
   image: string;
+  images?: string[];
   highlights: string[];
   route?: string[];
   difficulty?: string;
+  meta_title?: string;
+  meta_description?: string;
+  og_image?: string;
+  canonical_url?: string;
 };
 
 export const treks: Package[] = [
@@ -108,7 +115,8 @@ export const trips: Package[] = [
     priceLabel: "₹3,999",
     tagline:
       "Live like a local in the heritage village of Hanol along the Tons river.",
-    image: tripHanol,
+    image: tripHanol2,
+    images: [tripHanol2, tripHanol3, tripHanol],
     highlights: [
       "Hanol village experience",
       "Traditional Garhwali culture",
@@ -160,3 +168,56 @@ export const inclusions = [
   "Experienced tour guide",
   "Dedicated group coordinator",
 ];
+
+// Helper and react hook for dynamic db-loaded packages
+import { useState, useEffect } from "react";
+import { supabase } from "@/Integrations/Supabase/client";
+
+export function usePackages() {
+  const [packages, setPackages] = useState<Package[]>(allPackages);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const { data, error } = await supabase
+          .from("packages")
+          .select("*")
+          .order("sort_order", { ascending: true });
+
+        if (error || !data || data.length === 0) {
+          setPackages(allPackages);
+        } else {
+          const mapped: Package[] = data.map((row) => ({
+            slug: row.slug,
+            name: row.name,
+            category: row.category as "trek" | "trip",
+            duration: row.duration,
+            price: Number(row.price),
+            priceLabel: `₹${Number(row.price).toLocaleString("en-IN")}`,
+            tagline: row.overview || "",
+            image: row.image || "",
+            images: row.images || undefined,
+            highlights: row.highlights || [],
+            difficulty: row.difficulty || undefined,
+            route: row.pickup_point
+              ? [
+                  row.pickup_point,
+                  row.meeting_point || "",
+                  row.drop_point || "",
+                ].filter(Boolean)
+              : undefined,
+          }));
+          setPackages(mapped);
+        }
+      } catch (err) {
+        setPackages(allPackages);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  return { packages, loading };
+}

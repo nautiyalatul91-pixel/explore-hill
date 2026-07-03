@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { trips } from "@/lib/packages";
+import { usePackages } from "@/lib/packages";
 import { PackageCard } from "@/components/site/PackageCard";
 import { PageHero } from "@/components/site/PageHero";
 import hero from "@/assets/trip-mahasu.jpg";
 import { MapPin } from "lucide-react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/trips")({
   head: () => ({
@@ -28,23 +30,44 @@ export const Route = createFileRoute("/trips")({
 });
 
 function TripsPage() {
-  const mahasu = trips.find((t) => t.slug === "mahasu-devta-yatra");
+  const { packages } = usePackages();
+  const tripsList = packages.filter((p) => p.category === "trip");
+  const mahasu = tripsList.find((t) => t.slug === "mahasu-devta-yatra");
+  const [content, setContent] = useState<any>(null);
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from("settings")
+        .select("*")
+        .eq("key", "static_pages")
+        .maybeSingle();
+      if (data && typeof data.value === "object" && data.value !== null) {
+        const val = data.value as any;
+        if (val.trips) setContent(val.trips);
+      }
+    }
+    load();
+  }, []);
+
   return (
     <>
       <PageHero
         eyebrow="Cultural Trips"
         title={
-          <>
-            Soulful journeys through{" "}
-            <span className="text-gradient">timeless villages</span>
-          </>
+          content?.title ? content.title : (
+            <>
+              Soulful journeys through{" "}
+              <span className="text-gradient">timeless villages</span>
+            </>
+          )
         }
-        subtitle="Slow travel, village hospitality and the rituals that shape Uttarakhand — designed for travelers who want to feel, not just see."
-        image={hero}
+        subtitle={content?.subtitle || "Slow travel, village hospitality and the rituals that shape Uttarakhand — designed for travelers who want to feel, not just see."}
+        image={content?.image || hero}
       />
       <section className="py-20 sm:py-28 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 grid gap-6 sm:grid-cols-2">
-          {trips.map((p) => (
+          {tripsList.map((p) => (
             <PackageCard key={p.slug} pkg={p} />
           ))}
         </div>

@@ -11,29 +11,42 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const NAV = [
   { to: "/", label: "Home" },
   { to: "/treks", label: "Treks" },
   { to: "/trips", label: "Trips" },
   { to: "/gallery", label: "Gallery" },
+  { to: "/blog", label: "Blog" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
 ] as const;
 
-function Logo({ light = false }: { light?: boolean }) {
+function Logo({ light = false, company }: { light?: boolean; company?: any }) {
+  const companyName = company?.company_name || "Explore Hills";
+  const companySubtitle = company?.company_subtitle || "Uttarakhand";
+
   return (
     <Link to="/" className="flex items-center gap-2.5 shrink-0">
-      <span
-        className={cn(
-          "grid h-10 w-10 place-items-center rounded-xl shadow-card",
-          light
-            ? "bg-white/15 text-white"
-            : "bg-primary text-primary-foreground",
-        )}
-      >
-        <Mountain className="h-5 w-5" strokeWidth={2.2} />
-      </span>
+      {company?.logo ? (
+        <img
+          src={company.logo}
+          alt={companyName}
+          className="h-10 w-auto object-contain"
+        />
+      ) : (
+        <span
+          className={cn(
+            "grid h-10 w-10 place-items-center rounded-xl shadow-card",
+            light
+              ? "bg-white/15 text-white"
+              : "bg-primary text-primary-foreground",
+          )}
+        >
+          <Mountain className="h-5 w-5" strokeWidth={2.2} />
+        </span>
+      )}
       <span className="flex flex-col leading-none">
         <span
           className={cn(
@@ -41,7 +54,7 @@ function Logo({ light = false }: { light?: boolean }) {
             light ? "text-white" : "text-foreground",
           )}
         >
-          Explore Hills
+          {companyName}
         </span>
         <span
           className={cn(
@@ -49,14 +62,14 @@ function Logo({ light = false }: { light?: boolean }) {
             light ? "text-white/70" : "text-muted-foreground",
           )}
         >
-          Uttarakhand
+          {companySubtitle}
         </span>
       </span>
     </Link>
   );
 }
 
-function Header() {
+function Header({ hasAnnouncement = false, company }: { hasAnnouncement?: boolean; company?: any }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -72,10 +85,15 @@ function Header() {
     setOpen(false);
   }, [pathname]);
 
+  const navItems = company?.navigation && Array.isArray(company.navigation) && company.navigation.length > 0
+    ? company.navigation
+    : NAV;
+
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-500",
+        "fixed inset-x-0 z-50 transition-all duration-500",
+        hasAnnouncement && !scrolled ? "top-8" : "top-0",
         scrolled ? "py-2" : "py-4",
       )}
     >
@@ -88,9 +106,9 @@ function Header() {
               : "bg-white/10 backdrop-blur-md border border-white/15",
           )}
         >
-          <Logo light={!scrolled} />
+          <Logo light={!scrolled} company={company} />
           <nav className="hidden lg:flex items-center gap-1">
-            {NAV.map((item) => (
+            {navItems.map((item: any) => (
               <Link
                 key={item.to}
                 to={item.to}
@@ -137,7 +155,7 @@ function Header() {
         {open && (
           <div className="lg:hidden mt-2 rounded-2xl glass p-3 shadow-elegant animate-fade-up">
             <div className="flex flex-col gap-1">
-              {NAV.map((item) => (
+              {navItems.map((item: any) => (
                 <Link
                   key={item.to}
                   to={item.to}
@@ -165,7 +183,20 @@ function Header() {
   );
 }
 
-function Footer() {
+function Footer({ company }: { company?: any }) {
+  const companyName = company?.company_name || "Explore Hills";
+  const phone = company?.phone || "+91 63977 10701";
+  const email = company?.email || "contact@explorehills.in";
+  const instagram = company?.social_instagram || "https://instagram.com/atul__nautiyal";
+  const description = company?.company_description || "Authentic Himalayan adventures, small-group experiences and hidden destinations of Uttarakhand.";
+  const tagline = company?.footer_tagline || "Travel responsibly. Leave only footprints.";
+  const instagramHandle = instagram.split("/").pop() || "atul__nautiyal";
+  const targetPhone = (company?.whatsapp || company?.phone || "+91 63977 10701").replace(/[^0-9]/g, "");
+
+  const navItems = company?.navigation && Array.isArray(company.navigation) && company.navigation.length > 0
+    ? company.navigation
+    : NAV;
+
   return (
     <footer className="relative bg-ridge text-white">
       <div
@@ -175,10 +206,9 @@ function Footer() {
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-4">
-            <Logo light />
+            <Logo light company={company} />
             <p className="text-sm text-white/70 max-w-xs">
-              Authentic Himalayan adventures, small-group experiences and hidden
-              destinations of Uttarakhand.
+              {description}
             </p>
           </div>
           <div>
@@ -186,7 +216,7 @@ function Footer() {
               Explore
             </h4>
             <ul className="space-y-2 text-sm text-white/70">
-              {NAV.map((n) => (
+              {navItems.map((n: any) => (
                 <li key={n.to}>
                   <Link
                     to={n.to}
@@ -204,13 +234,13 @@ function Footer() {
             </h4>
             <ul className="space-y-3 text-sm text-white/70">
               <li className="flex items-center gap-2">
-                <Phone className="h-4 w-4" /> +91 63977 10701
+                <Phone className="h-4 w-4" /> {phone}
               </li>
               <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4" /> contact@explorehills.in
+                <Mail className="h-4 w-4" /> {email}
               </li>
               <li className="flex items-center gap-2">
-                <Instagram className="h-4 w-4" /> @atul__nautiyal
+                <Instagram className="h-4 w-4" /> {instagramHandle.startsWith("@") ? instagramHandle : `@${instagramHandle}`}
               </li>
             </ul>
           </div>
@@ -220,7 +250,7 @@ function Footer() {
             </h4>
             <div className="flex flex-col gap-3">
               <a
-                href="https://wa.me/916397710701"
+                href={`https://wa.me/${targetPhone}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-[oklch(0.62_0.16_150)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-95 transition"
@@ -238,20 +268,22 @@ function Footer() {
         </div>
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/50">
           <p>
-            © {new Date().getFullYear()} Explore Hills. Crafted in Uttarakhand
-            by Atul Nautiyal.
+            © {new Date().getFullYear()} {companyName}. Crafted in Uttarakhand.
           </p>
-          <p>Travel responsibly. Leave only footprints.</p>
+          <p>{tagline}</p>
         </div>
       </div>
     </footer>
   );
 }
 
-function FloatingWhatsApp() {
+function FloatingWhatsApp({ company }: { company?: any }) {
+  const targetPhone = (company?.whatsapp || company?.phone || "+91 63977 10701").replace(/[^0-9]/g, "");
+  const companyName = company?.company_name || "Explore Hills";
+  
   return (
     <a
-      href="https://wa.me/916397710701?text=Hi%20Explore%20Hills%2C%20I%27d%20like%20to%20know%20more%20about%20your%20trips."
+      href={`https://wa.me/${targetPhone}?text=Hi%20${encodeURIComponent(companyName)}%2C%20I%27d%20like%20to%20know%20more%20about%20your%20trips.`}
       target="_blank"
       rel="noreferrer"
       aria-label="Chat on WhatsApp"
@@ -263,14 +295,64 @@ function FloatingWhatsApp() {
 }
 
 export function SiteLayout() {
+  const [announcement, setAnnouncement] = useState<{ text: string; enabled: boolean } | null>(null);
+  const [company, setCompany] = useState<any>(null);
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from("settings")
+        .select("*")
+        .eq("key", "homepage")
+        .maybeSingle();
+      if (data && typeof data.value === "object" && data.value !== null) {
+        const val = data.value as any;
+        setAnnouncement({
+          text: val.announcement_bar_text || "",
+          enabled: !!val.announcement_bar_enabled,
+        });
+      }
+
+      const { data: comp } = await supabase
+        .from("settings")
+        .select("*")
+        .eq("key", "company_settings")
+        .maybeSingle();
+      if (comp && typeof comp.value === "object" && comp.value !== null) {
+        setCompany(comp.value);
+      }
+    }
+    load();
+  }, []);
+
+  useEffect(() => {
+    if (company?.favicon) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = company.favicon;
+    }
+    if (company?.company_name) {
+      document.title = company.company_name + " — Authentic Himalayan Adventures";
+    }
+  }, [company]);
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header />
+      {announcement?.enabled && (
+        <div className="bg-[oklch(0.62_0.18_150)] text-white text-center py-2 text-xs font-semibold select-none z-50 h-8 flex items-center justify-center relative">
+          {announcement.text}
+        </div>
+      )}
+      <Header hasAnnouncement={!!announcement?.enabled} company={company} />
       <main className="flex-1">
         <Outlet />
       </main>
-      <Footer />
-      <FloatingWhatsApp />
+      <Footer company={company} />
+      <FloatingWhatsApp company={company} />
       <Toaster position="top-right" richColors closeButton />
     </div>
   );

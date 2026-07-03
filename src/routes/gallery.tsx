@@ -12,6 +12,8 @@ import yulla from "@/assets/trek-yulla.jpg";
 import kedarkantha from "@/assets/trek-kedarkantha.jpg";
 import hanol from "@/assets/trip-hanol.jpg";
 import mahasu from "@/assets/trip-mahasu.jpg";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/gallery")({
   head: () => ({
@@ -20,7 +22,7 @@ export const Route = createFileRoute("/gallery")({
       {
         name: "description",
         content:
-          "A visual journey through our Himalayan adventures — mountains, villages, bonfires and people.",
+          "A visual journey through our Himalayan adventures — mountains, villages, bonfires and the people.",
       },
       { property: "og:title", content: "Gallery — Explore Hills" },
       {
@@ -61,22 +63,60 @@ const items = [
 ];
 
 function GalleryPage() {
+  const [content, setContent] = useState<any>(null);
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from("settings")
+        .select("*")
+        .eq("key", "static_pages")
+        .maybeSingle();
+      if (data && typeof data.value === "object" && data.value !== null) {
+        const val = data.value as any;
+        if (val.gallery) setContent(val.gallery);
+      }
+    }
+    load();
+
+    async function loadImages() {
+      const { data } = await supabase
+        .from("media_library")
+        .select("*")
+        .eq("folder", "gallery");
+      if (data && data.length > 0) {
+        setGalleryImages(data.map((m, idx) => ({
+          src: m.file_path,
+          alt: m.file_name,
+          tag: m.file_name.split(".")[0].replace(/[-_]/g, " "),
+          span: idx % 3 === 0 ? "row-span-2" : ""
+        })));
+      }
+    }
+    loadImages();
+  }, []);
+
+  const itemsList = galleryImages.length > 0 ? galleryImages : items;
+
   return (
     <>
       <PageHero
         eyebrow="Gallery"
         title={
-          <>
-            Frames from the <span className="text-gradient">trail</span>
-          </>
+          content?.title ? content.title : (
+            <>
+              Frames from the <span className="text-gradient">trail</span>
+            </>
+          )
         }
-        subtitle="Mountains, villages, bonfires and the people who make our trips unforgettable."
-        image={hero}
+        subtitle={content?.subtitle || "Mountains, villages, bonfires and the people who make our trips unforgettable."}
+        image={content?.image || hero}
       />
       <section className="py-20 sm:py-28 bg-background">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 auto-rows-[180px] sm:auto-rows-[220px] gap-3">
-            {items.map((it, i) => (
+            {itemsList.map((it, i) => (
               <figure
                 key={i}
                 className={`group relative overflow-hidden rounded-2xl shadow-card hover-lift ${it.span ?? ""}`}

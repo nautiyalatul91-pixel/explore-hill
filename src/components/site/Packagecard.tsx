@@ -1,21 +1,98 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Clock, MapPin } from "lucide-react";
+import {
+  ArrowRight,
+  Clock,
+  MapPin,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import type { Package } from "@/lib/packages";
+import { useState } from "react";
 
 export function PackageCard({ pkg }: { pkg: Package }) {
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const hasMultipleImages = !!pkg.images && pkg.images.length > 1;
+  const currentImage = hasMultipleImages
+    ? pkg.images![activeImageIdx]
+    : pkg.image;
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (pkg.images) {
+      setActiveImageIdx((prev) =>
+        prev === 0 ? pkg.images!.length - 1 : prev - 1,
+      );
+    }
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (pkg.images) {
+      setActiveImageIdx((prev) =>
+        prev === pkg.images!.length - 1 ? 0 : prev + 1,
+      );
+    }
+  };
+
   return (
     <article className="group relative overflow-hidden rounded-3xl bg-card shadow-card hover-lift">
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
-          src={pkg.image}
+          src={currentImage}
           alt={pkg.name}
           loading="lazy"
           width={1280}
           height={960}
-          className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-110"
+          className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-105"
         />
+
+        {/* Navigation Arrows */}
+        {hasMultipleImages && (
+          <>
+            <button
+              onClick={handlePrev}
+              type="button"
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full glass border-none text-ridge hover:bg-white/30 transition opacity-0 group-hover:opacity-100 cursor-pointer"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              onClick={handleNext}
+              type="button"
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex h-8 w-8 items-center justify-center rounded-full glass border-none text-ridge hover:bg-white/30 transition opacity-0 group-hover:opacity-100 cursor-pointer"
+              aria-label="Next image"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </>
+        )}
+
+        {/* Indicators */}
+        {hasMultipleImages && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+            {pkg.images!.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setActiveImageIdx(idx);
+                }}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  idx === activeImageIdx ? "bg-white w-3" : "bg-white/50 w-1.5"
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        )}
+
         <div className="absolute inset-0 bg-gradient-to-t from-ridge/80 via-ridge/10 to-transparent" />
-        <div className="absolute top-4 left-4 flex gap-2">
+        <div className="absolute top-4 left-4 flex gap-2 z-10">
           <span className="rounded-full glass px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-ridge">
             {pkg.category === "trek" ? "Trek" : "Trip"}
           </span>
@@ -25,7 +102,7 @@ export function PackageCard({ pkg }: { pkg: Package }) {
             </span>
           )}
         </div>
-        <div className="absolute bottom-4 left-5 right-5 text-white">
+        <div className="absolute bottom-4 left-5 right-5 text-white z-10">
           <h3 className="font-display text-2xl font-bold leading-tight">
             {pkg.name}
           </h3>

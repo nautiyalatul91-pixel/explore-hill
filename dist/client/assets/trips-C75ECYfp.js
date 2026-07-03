@@ -1,1 +1,84 @@
-import{t as e}from"./jsx-runtime-DGeXAQPT.js";import{t}from"./map-pin-BOCy7l3d.js";import{d as n}from"./index-ByEr9w9j.js";import{t as r}from"./PageHero-BLDKAlfd.js";import{i}from"./packages-HKOB1p0y.js";import{t as a}from"./PackageCard-Cud42Brd.js";var o=e();function s(){let e=i.find(e=>e.slug===`mahasu-devta-yatra`);return(0,o.jsxs)(o.Fragment,{children:[(0,o.jsx)(r,{eyebrow:`Cultural Trips`,title:(0,o.jsxs)(o.Fragment,{children:[`Soulful journeys through`,` `,(0,o.jsx)(`span`,{className:`text-gradient`,children:`timeless villages`})]}),subtitle:`Slow travel, village hospitality and the rituals that shape Uttarakhand — designed for travelers who want to feel, not just see.`,image:n}),(0,o.jsx)(`section`,{className:`py-20 sm:py-28 bg-background`,children:(0,o.jsx)(`div`,{className:`mx-auto max-w-7xl px-4 sm:px-6 grid gap-6 sm:grid-cols-2`,children:i.map(e=>(0,o.jsx)(a,{pkg:e},e.slug))})}),e?.route&&(0,o.jsx)(`section`,{className:`py-20 sm:py-28 bg-mist`,children:(0,o.jsxs)(`div`,{className:`mx-auto max-w-5xl px-4 sm:px-6`,children:[(0,o.jsx)(`p`,{className:`text-xs font-semibold uppercase tracking-[0.2em] text-ember`,children:`Featured route`}),(0,o.jsx)(`h2`,{className:`mt-3 font-display text-4xl sm:text-5xl font-bold text-foreground`,children:`Mahasu Devta Yatra`}),(0,o.jsx)(`p`,{className:`mt-3 text-muted-foreground max-w-2xl`,children:`A three-day circuit through ancient temples, riverside villages and sacred mountain trails.`}),(0,o.jsx)(`ol`,{className:`mt-10 relative border-l-2 border-dashed border-primary/30 pl-8 space-y-6`,children:e.route.map((e,n)=>(0,o.jsxs)(`li`,{className:`relative`,children:[(0,o.jsx)(`span`,{className:`absolute -left-[42px] grid h-8 w-8 place-items-center rounded-full bg-[var(--gradient-brand)] text-white text-xs font-bold shadow-card`,children:n+1}),(0,o.jsxs)(`div`,{className:`flex items-center gap-2 font-display text-xl font-semibold text-foreground`,children:[(0,o.jsx)(t,{className:`h-4 w-4 text-ember`}),` `,e]})]},e+n))})]})})]})}export{s as component};
+import { t as e } from "./jsx-runtime-DGeXAQPT.js";
+import { t } from "./map-pin-BOCy7l3d.js";
+import { d as n } from "./index-ByEr9w9j.js";
+import { t as r } from "./PageHero-BLDKAlfd.js";
+import { i } from "./packages-HKOB1p0y.js";
+import { t as a } from "./PackageCard-Cud42Brd.js";
+var o = e();
+function s() {
+  let e = i.find((e) => e.slug === `mahasu-devta-yatra`);
+  return (0, o.jsxs)(o.Fragment, {
+    children: [
+      (0, o.jsx)(r, {
+        eyebrow: `Cultural Trips`,
+        title: (0, o.jsxs)(o.Fragment, {
+          children: [
+            `Soulful journeys through`,
+            ` `,
+            (0, o.jsx)(`span`, {
+              className: `text-gradient`,
+              children: `timeless villages`,
+            }),
+          ],
+        }),
+        subtitle: `Slow travel, village hospitality and the rituals that shape Uttarakhand — designed for travelers who want to feel, not just see.`,
+        image: n,
+      }),
+      (0, o.jsx)(`section`, {
+        className: `py-20 sm:py-28 bg-background`,
+        children: (0, o.jsx)(`div`, {
+          className: `mx-auto max-w-7xl px-4 sm:px-6 grid gap-6 sm:grid-cols-2`,
+          children: i.map((e) => (0, o.jsx)(a, { pkg: e }, e.slug)),
+        }),
+      }),
+      e?.route &&
+        (0, o.jsx)(`section`, {
+          className: `py-20 sm:py-28 bg-mist`,
+          children: (0, o.jsxs)(`div`, {
+            className: `mx-auto max-w-5xl px-4 sm:px-6`,
+            children: [
+              (0, o.jsx)(`p`, {
+                className: `text-xs font-semibold uppercase tracking-[0.2em] text-ember`,
+                children: `Featured route`,
+              }),
+              (0, o.jsx)(`h2`, {
+                className: `mt-3 font-display text-4xl sm:text-5xl font-bold text-foreground`,
+                children: `Mahasu Devta Yatra`,
+              }),
+              (0, o.jsx)(`p`, {
+                className: `mt-3 text-muted-foreground max-w-2xl`,
+                children: `A three-day circuit through ancient temples, riverside villages and sacred mountain trails.`,
+              }),
+              (0, o.jsx)(`ol`, {
+                className: `mt-10 relative border-l-2 border-dashed border-primary/30 pl-8 space-y-6`,
+                children: e.route.map((e, n) =>
+                  (0, o.jsxs)(
+                    `li`,
+                    {
+                      className: `relative`,
+                      children: [
+                        (0, o.jsx)(`span`, {
+                          className: `absolute -left-[42px] grid h-8 w-8 place-items-center rounded-full bg-[var(--gradient-brand)] text-white text-xs font-bold shadow-card`,
+                          children: n + 1,
+                        }),
+                        (0, o.jsxs)(`div`, {
+                          className: `flex items-center gap-2 font-display text-xl font-semibold text-foreground`,
+                          children: [
+                            (0, o.jsx)(t, { className: `h-4 w-4 text-ember` }),
+                            ` `,
+                            e,
+                          ],
+                        }),
+                      ],
+                    },
+                    e + n,
+                  ),
+                ),
+              }),
+            ],
+          }),
+        }),
+    ],
+  });
+}
+export { s as component };

@@ -1,0 +1,1 @@
+var e=`/assets/gallery-food-j-8pOAcb.jpg`;export{e as t};
