@@ -171,7 +171,7 @@ export const inclusions = [
 
 // Helper and react hook for dynamic db-loaded packages
 import { useState, useEffect } from "react";
-import { supabase } from "@/Integrations/Supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 export function usePackages() {
   const [packages, setPackages] = useState<Package[]>(allPackages);
