@@ -18,7 +18,7 @@ import galleryCamping from "@/assets/gallery-camping.jpg";
 import galleryGroup from "@/assets/gallery-group.jpg";
 import galleryFood from "@/assets/gallery-food.jpg";
 import { usePackages } from "@/lib/packages";
-import { PackageCard } from "@/components/site/Packagecard";
+import { PackageCard } from "@/components/site/PackageCard";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
