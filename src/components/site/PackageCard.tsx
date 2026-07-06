@@ -39,14 +39,16 @@ export function PackageCard({ pkg }: { pkg: Package }) {
   return (
     <article className="group relative overflow-hidden rounded-3xl bg-card shadow-card hover-lift">
       <div className="relative aspect-[4/3] overflow-hidden">
-        <img
-          src={currentImage}
-          alt={pkg.name}
-          loading="lazy"
-          width={1280}
-          height={960}
-          className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-105"
-        />
+        <Link to="/packages/$slug" params={{ slug: pkg.slug }} className="block h-full w-full">
+          <img
+            src={currentImage}
+            alt={pkg.name}
+            loading="lazy"
+            width={1280}
+            height={960}
+            className="h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-105"
+          />
+        </Link>
 
         {/* Navigation Arrows */}
         {hasMultipleImages && (
@@ -91,7 +93,7 @@ export function PackageCard({ pkg }: { pkg: Package }) {
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-ridge/80 via-ridge/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ridge/80 via-ridge/10 to-transparent pointer-events-none" />
         <div className="absolute top-4 left-4 flex gap-2 z-10">
           <span className="rounded-full glass px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-ridge">
             {pkg.category === "trek" ? "Trek" : "Trip"}
@@ -103,8 +105,10 @@ export function PackageCard({ pkg }: { pkg: Package }) {
           )}
         </div>
         <div className="absolute bottom-4 left-5 right-5 text-white z-10">
-          <h3 className="font-display text-2xl font-bold leading-tight">
-            {pkg.name}
+          <h3 className="font-display text-2xl font-bold leading-tight hover:text-ember transition-colors">
+            <Link to="/packages/$slug" params={{ slug: pkg.slug }} className="text-white hover:text-ember transition-colors">
+              {pkg.name}
+            </Link>
           </h3>
           <div className="mt-1 flex items-center gap-3 text-xs text-white/80">
             <span className="inline-flex items-center gap-1">
@@ -128,7 +132,7 @@ export function PackageCard({ pkg }: { pkg: Package }) {
             </li>
           ))}
         </ul>
-        <div className="mt-6 flex items-end justify-between">
+        <div className="mt-6 flex items-center justify-between">
           <div>
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
               From
@@ -140,11 +144,18 @@ export function PackageCard({ pkg }: { pkg: Package }) {
                 /person
               </span>
             </p>
+            <Link
+              to="/packages/$slug"
+              params={{ slug: pkg.slug }}
+              className="block text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors mt-1"
+            >
+              View Details & Reviews
+            </Link>
           </div>
           <Link
             to="/book"
             search={{ pkg: pkg.slug }}
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition"
+            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition shadow-sm"
           >
             Book Now <ArrowRight className="h-3.5 w-3.5" />
           </Link>

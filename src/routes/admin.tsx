@@ -152,12 +152,14 @@ type Review = {
   id: string;
   package_slug: string;
   user_name: string;
+  customer_name?: string;
+  package_name?: string;
   rating: number;
   comment: string | null;
   images: string[] | null;
   videos: string[] | null;
   reply: string | null;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "hidden";
   featured: boolean;
   verified: boolean;
   created_at: string;
@@ -700,7 +702,12 @@ function AdminPage() {
     if (error) {
       console.error("Failed to load reviews:", error.message);
     } else {
-      setReviews(data as Review[]);
+      const mapped = (data as any[]).map((row) => ({
+        ...row,
+        customer_name: row.customer_name || row.user_name || "Traveler",
+        package_name: row.package_name || dbPackages.find((p) => p.slug === row.package_slug)?.name || row.package_slug,
+      }));
+      setReviews(mapped as Review[]);
     }
   }
 
@@ -1076,19 +1083,32 @@ function AdminPage() {
     const matchedPkg = dbPackages.find(p => p.slug === newReview.package_slug);
     const pkgName = matchedPkg ? matchedPkg.name : "General Trek";
 
-    const { error } = await supabase.from("reviews").insert({
-      package_slug: newReview.package_slug,
-      package_name: pkgName,
-      customer_name: newReview.customer_name,
-      rating: Number(newReview.rating),
-      comment: newReview.comment,
-      verified: newReview.verified,
-      status: newReview.status,
-    });
+    try {
+      const { error } = await supabase.from("reviews").insert({
+        package_slug: newReview.package_slug,
+        user_name: newReview.customer_name,
+        customer_name: newReview.customer_name,
+        package_name: pkgName,
+        rating: Number(newReview.rating),
+        comment: newReview.comment,
+        verified: newReview.verified,
+        status: newReview.status,
+      });
 
-    if (error) {
-      toast.error("Failed to add review: " + error.message);
-    } else {
+      if (error) {
+        // Fallback insert with just standard schema columns (user_name, package_slug)
+        const { error: fallbackError } = await supabase.from("reviews").insert({
+          package_slug: newReview.package_slug,
+          user_name: newReview.customer_name,
+          rating: Number(newReview.rating),
+          comment: newReview.comment,
+          verified: newReview.verified,
+          status: newReview.status,
+        });
+
+        if (fallbackError) throw fallbackError;
+      }
+      
       toast.success("Review added successfully");
       logAction("create_review", "review", null, { customer: newReview.customer_name });
       setShowAddReviewForm(false);
@@ -1101,6 +1121,8 @@ function AdminPage() {
         status: "approved",
       });
       fetchReviews();
+    } catch (err: any) {
+      toast.error("Failed to add review: " + err.message);
     }
   }
 
