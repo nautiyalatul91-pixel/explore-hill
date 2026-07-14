@@ -12,7 +12,14 @@ import {
   ShieldCheck, 
   ChevronRight, 
   Sparkles,
-  MessageSquare
+  MessageSquare,
+  Utensils,
+  Home,
+  Mountain,
+  Info,
+  Compass,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -37,6 +44,23 @@ type DbReview = {
   created_at: string;
 };
 
+type ItineraryDay = {
+  id?: string;
+  package_slug: string;
+  day_number: number;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  meals: string | null;
+  stay: string | null;
+  distance: string | null;
+  altitude: string | null;
+  travel_time: string | null;
+  activities: string | null;
+  notes: string | null;
+  images: string[] | null;
+};
+
 function PackageDetail() {
   const { slug } = Route.useParams();
   const { packages, loading: loadingPkgs } = usePackages();
@@ -44,6 +68,11 @@ function PackageDetail() {
   const [reviews, setReviews] = useState<DbReview[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
   const [submittingReview, setSubmittingReview] = useState(false);
+
+  // Itinerary States
+  const [itinerary, setItinerary] = useState<ItineraryDay[]>([]);
+  const [loadingItinerary, setLoadingItinerary] = useState(true);
+  const [expandedDay, setExpandedDay] = useState<number | null>(1); // Day 1 open by default
 
   // Review Form States
   const [formName, setFormName] = useState("");
@@ -76,6 +105,24 @@ function PackageDetail() {
       setLoadingReviews(false);
     }
     loadReviews();
+  }, [slug]);
+
+  useEffect(() => {
+    async function loadItinerary() {
+      if (!slug) return;
+      setLoadingItinerary(true);
+      const { data, error } = await supabase
+        .from("itineraries")
+        .select("*")
+        .eq("package_slug", slug)
+        .order("day_number", { ascending: true });
+
+      if (!error && data) {
+        setItinerary(data as ItineraryDay[]);
+      }
+      setLoadingItinerary(false);
+    }
+    loadItinerary();
   }, [slug]);
 
   async function handleAddPublicReview(e: React.FormEvent) {
@@ -203,22 +250,154 @@ function PackageDetail() {
               </section>
 
               {/* Itinerary / Route Stops */}
-              {pkg.route && pkg.route.length > 0 && (
+              {!loadingItinerary && itinerary.length > 0 ? (
                 <section className="space-y-6">
-                  <h3 className="font-display text-2xl font-bold">Planned Route</h3>
-                  <div className="relative border-l-2 border-dashed border-primary/30 pl-8 space-y-6">
-                    {pkg.route.map((stop, i) => (
-                      <div key={stop + i} className="relative">
-                        <span className="absolute -left-[42px] grid h-8 w-8 place-items-center rounded-full bg-[var(--gradient-brand)] text-white text-xs font-bold shadow-card">
-                          {i + 1}
-                        </span>
-                        <div className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
-                          <MapPin className="h-4 w-4 text-ember" /> {stop}
+                  <h3 className="font-display text-2xl font-bold">Detailed Itinerary</h3>
+                  <div className="space-y-4">
+                    {itinerary.map((day) => {
+                      const isOpen = expandedDay === day.day_number;
+                      return (
+                        <div 
+                          key={day.id || day.day_number} 
+                          className="bg-card border border-border rounded-2xl overflow-hidden transition-all duration-300 shadow-sm"
+                        >
+                          {/* Accordion Trigger */}
+                          <button
+                            type="button"
+                            onClick={() => setExpandedDay(isOpen ? null : day.day_number)}
+                            className="w-full text-left px-6 py-4 flex items-center justify-between gap-4 font-display text-lg font-semibold text-foreground hover:bg-muted/30 transition cursor-pointer"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="grid h-8 w-8 place-items-center rounded-full bg-primary/10 text-primary text-xs font-bold shrink-0">
+                                D{day.day_number}
+                              </span>
+                              <div>
+                                <span>{day.title}</span>
+                                {day.subtitle && (
+                                  <span className="block text-xs font-sans text-muted-foreground font-normal mt-0.5">
+                                    {day.subtitle}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {isOpen ? (
+                              <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" />
+                            ) : (
+                              <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
+                            )}
+                          </button>
+
+                          {/* Accordion Content */}
+                          {isOpen && (
+                            <div className="px-6 pb-6 pt-3 border-t border-border/50 space-y-5 animate-fadeIn">
+                              
+                              {/* Metadata Grid */}
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs bg-muted/40 rounded-xl p-4 border border-border/40">
+                                {day.meals && (
+                                  <div className="flex items-center gap-2">
+                                    <Utensils className="h-4 w-4 text-primary shrink-0" />
+                                    <div>
+                                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Meals</span>
+                                      <span className="font-semibold text-foreground">{day.meals}</span>
+                                    </div>
+                                  </div>
+                                )}
+                                {day.stay && (
+                                  <div className="flex items-center gap-2">
+                                    <Home className="h-4 w-4 text-primary shrink-0" />
+                                    <div>
+                                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Stay</span>
+                                      <span className="font-semibold text-foreground">{day.stay}</span>
+                                    </div>
+                                  </div>
+                                )}
+                                {day.distance && (
+                                  <div className="flex items-center gap-2">
+                                    <Compass className="h-4 w-4 text-primary shrink-0" />
+                                    <div>
+                                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Distance</span>
+                                      <span className="font-semibold text-foreground">{day.distance}</span>
+                                    </div>
+                                  </div>
+                                )}
+                                {day.altitude && (
+                                  <div className="flex items-center gap-2">
+                                    <Mountain className="h-4 w-4 text-primary shrink-0" />
+                                    <div>
+                                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Altitude</span>
+                                      <span className="font-semibold text-foreground">{day.altitude}</span>
+                                    </div>
+                                  </div>
+                                )}
+                                {day.travel_time && (
+                                  <div className="flex items-center gap-2">
+                                    <Clock className="h-4 w-4 text-primary shrink-0" />
+                                    <div>
+                                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Travel Time</span>
+                                      <span className="font-semibold text-foreground">{day.travel_time}</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Description */}
+                              {day.description && (
+                                <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line font-sans">
+                                  {day.description}
+                                </div>
+                              )}
+
+                              {/* Notes */}
+                              {day.notes && (
+                                <div className="flex gap-3 bg-amber-500/5 border border-amber-500/15 rounded-xl p-4 text-xs text-foreground/95">
+                                  <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                                  <div>
+                                    <span className="font-bold text-amber-600 uppercase tracking-wider block mb-1 text-[10px]">Important Note</span>
+                                    {day.notes}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Images */}
+                              {day.images && day.images.length > 0 && (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                  {day.images.map((imgUrl, imgIdx) => (
+                                    <div key={imgIdx} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border group/img">
+                                      <img
+                                        src={imgUrl}
+                                        alt={`Day ${day.day_number} - Image ${imgIdx + 1}`}
+                                        className="w-full h-full object-cover transition-transform duration-300 group-hover/img:scale-105"
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </section>
+              ) : (
+                pkg.route && pkg.route.length > 0 && (
+                  <section className="space-y-6">
+                    <h3 className="font-display text-2xl font-bold">Planned Route</h3>
+                    <div className="relative border-l-2 border-dashed border-primary/30 pl-8 space-y-6">
+                      {pkg.route.map((stop, i) => (
+                        <div key={stop + i} className="relative">
+                          <span className="absolute -left-[42px] grid h-8 w-8 place-items-center rounded-full bg-[var(--gradient-brand)] text-white text-xs font-bold shadow-card">
+                            {i + 1}
+                          </span>
+                          <div className="flex items-center gap-2 font-display text-lg font-semibold text-foreground">
+                            <MapPin className="h-4 w-4 text-ember" /> {stop}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )
               )}
 
               {/* REVIEWS SECTION */}
