@@ -347,6 +347,24 @@ function PackageDetail() {
                                 </div>
                               )}
 
+                              {/* Highlights */}
+                              {day.activities && (
+                                <div className="space-y-2">
+                                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Day Highlights</span>
+                                  <div className="flex flex-wrap gap-2">
+                                    {day.activities.split(",").map((act, actIdx) => (
+                                      <span 
+                                        key={actIdx} 
+                                        className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-700 px-3 py-1 rounded-full text-xs font-semibold border border-amber-500/20 shadow-sm"
+                                      >
+                                        <Sparkles className="h-3 w-3 text-amber-500 shrink-0" />
+                                        {act.trim()}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
                               {/* Notes */}
                               {day.notes && (
                                 <div className="flex gap-3 bg-amber-500/5 border border-amber-500/15 rounded-xl p-4 text-xs text-foreground/95">
@@ -360,16 +378,20 @@ function PackageDetail() {
 
                               {/* Images */}
                               {day.images && day.images.length > 0 && (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                  {day.images.map((imgUrl, imgIdx) => (
-                                    <div key={imgIdx} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border group/img">
-                                      <img
-                                        src={imgUrl}
-                                        alt={`Day ${day.day_number} - Image ${imgIdx + 1}`}
-                                        className="w-full h-full object-cover transition-transform duration-300 group-hover/img:scale-105"
-                                      />
-                                    </div>
-                                  ))}
+                                <div className="space-y-2">
+                                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider block">Day Gallery</span>
+                                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {day.images.map((imgUrl, imgIdx) => (
+                                      <div key={imgIdx} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-border group/img cursor-zoom-in shadow-sm">
+                                        <img
+                                          src={imgUrl}
+                                          alt={`Day ${day.day_number} - Image ${imgIdx + 1}`}
+                                          className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-black/15 opacity-0 group-hover/img:opacity-100 transition-opacity duration-300" />
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
                               )}
 

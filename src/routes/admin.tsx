@@ -6408,6 +6408,86 @@ function AdminPage() {
                         </div>
 
                         <div>
+                          <label className="text-xs font-semibold uppercase text-muted-foreground block">
+                            Day Highlights
+                          </label>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {((itineraryDays[activeDayIndex].activities || "")
+                              .split(",")
+                              .map((h) => h.trim())
+                              .filter(Boolean)
+                            ).map((hl, hlIdx) => (
+                              <span
+                                key={hlIdx}
+                                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary"
+                              >
+                                {hl}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const currentHls = (itineraryDays[activeDayIndex].activities || "")
+                                      .split(",")
+                                      .map((h) => h.trim())
+                                      .filter(Boolean);
+                                    const newHl = currentHls.filter((_, idx) => idx !== hlIdx);
+                                    const copy = [...itineraryDays];
+                                    copy[activeDayIndex].activities = newHl.join(",");
+                                    setItineraryDays(copy);
+                                  }}
+                                  className="ml-1 text-xs hover:text-red-500 font-bold focus:outline-none cursor-pointer"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <input
+                              type="text"
+                              id="new-highlight-input"
+                              placeholder="e.g. Temple Visit, Waterfall"
+                              className="flex-1 rounded-xl border border-input bg-background px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-ring text-foreground"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  const val = e.currentTarget.value.trim();
+                                  if (val) {
+                                    const currentHls = (itineraryDays[activeDayIndex].activities || "")
+                                      .split(",")
+                                      .map((h) => h.trim())
+                                      .filter(Boolean);
+                                    const copy = [...itineraryDays];
+                                    copy[activeDayIndex].activities = [...currentHls, val].join(",");
+                                    setItineraryDays(copy);
+                                    e.currentTarget.value = "";
+                                  }
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const input = document.getElementById("new-highlight-input") as HTMLInputElement;
+                                const val = input?.value.trim();
+                                if (val) {
+                                  const currentHls = (itineraryDays[activeDayIndex].activities || "")
+                                    .split(",")
+                                    .map((h) => h.trim())
+                                    .filter(Boolean);
+                                  const copy = [...itineraryDays];
+                                  copy[activeDayIndex].activities = [...currentHls, val].join(",");
+                                  setItineraryDays(copy);
+                                  if (input) input.value = "";
+                                }
+                              }}
+                              className="rounded-xl bg-primary text-primary-foreground px-3 py-1.5 text-xs font-semibold hover:bg-primary/95 transition cursor-pointer"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
                           <label className="text-xs font-semibold uppercase text-muted-foreground">
                             Day Images List
                           </label>
