@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ArrowRight,
   Compass,
@@ -48,6 +48,12 @@ export const Route = createFileRoute("/")({
   }),
   component: Home,
 });
+
+const formatIndexBatchDate = (dateStr: string) => {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" });
+};
 
 const stats = [
   { value: "2,500+", label: "Happy Travelers" },
@@ -134,6 +140,10 @@ function Home() {
   const { packages } = usePackages();
   const [homepageData, setHomepageData] = useState<any>(null);
   const [reviewsList, setReviewsList] = useState<any[]>([]);
+  const [departuresList, setDeparturesList] = useState<any[]>([]);
+  const [loadingDepartures, setLoadingDepartures] = useState(true);
+  const [whatsappPhone, setWhatsappPhone] = useState("916397710701");
+  const [companyName, setCompanyName] = useState("Explore Hills");
 
   useEffect(() => {
     async function load() {
@@ -164,10 +174,64 @@ function Home() {
       }
     }
     loadReviews();
+
+    async function loadDepartures() {
+      const todayDate = new Date().toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("departures")
+        .select("*")
+        .gte("start_date", todayDate)
+        .neq("status", "cancelled")
+        .neq("visibility", "hidden")
+        .order("start_date", { ascending: true });
+      if (!error && data) {
+        setDeparturesList(data);
+      }
+      setLoadingDepartures(false);
+    }
+    loadDepartures();
+
+    async function loadSettings() {
+      const { data } = await supabase.from("settings").select("*").maybeSingle();
+      if (data) {
+        if (data.whatsapp || data.phone) {
+          setWhatsappPhone((data.whatsapp || data.phone).replace(/[^0-9]/g, ""));
+        }
+        if (data.company_name) {
+          setCompanyName(data.company_name);
+        }
+      }
+    }
+    loadSettings();
   }, []);
 
   const treksCount = packages.filter((p) => p.category === "trek").length;
   const tripsCount = packages.filter((p) => p.category === "trip").length;
+
+  const displayedPackages = useMemo(() => {
+    return packages
+      .map((p) => {
+        const pkgBatches = departuresList.filter((d) => d.package_slug === p.slug);
+        if (pkgBatches.length === 0) return null;
+        
+        // Find the first available (not sold out) batch
+        const availableBatch = pkgBatches.find((d) => {
+          const isSoldOut = d.status === "full" || (d.booked_seats >= d.max_seats && !d.unlimited_seats);
+          return !isSoldOut;
+        });
+        
+        // If an available batch is found, return package and that batch. Otherwise, return package and the nearest batch (first one).
+        const selectedBatch = availableBatch || pkgBatches[0];
+        
+        return {
+          pkg: p,
+          batch: selectedBatch,
+        };
+      })
+      .filter((item): item is { pkg: typeof packages[0]; batch: any } => item !== null)
+      // Sort by the selected batch's start_date ascending so the earliest departures are at the top!
+      .sort((a, b) => a.batch.start_date.localeCompare(b.batch.start_date));
+  }, [packages, departuresList]);
 
   const statsList = homepageData?.stats && Array.isArray(homepageData.stats)
     ? homepageData.stats
@@ -462,53 +526,107 @@ function Home() {
             </h2>
           </div>
         </div>
-        <div className="grid gap-3">
-          {packages.slice(0, 4).map((p, i) => {
-            const date = new Date();
-            date.setDate(date.getDate() + 14 + i * 7);
-            const formatted = date.toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            });
-            return (
-              <div
-                key={p.slug}
-                className="flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl bg-card border border-border p-5 shadow-card hover:shadow-elegant transition-shadow"
-              >
-                <img
-                  src={p.image}
-                  alt={p.name}
-                  loading="lazy"
-                  className="h-20 w-full sm:w-28 rounded-xl object-cover"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="font-display text-lg font-semibold text-foreground">
-                    {p.name}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-0.5">
-                    {p.duration} · Departs {formatted}
-                  </div>
-                </div>
-                <div className="text-left sm:text-right">
-                  <div className="font-display text-xl font-bold text-primary">
-                    {p.priceLabel}
-                  </div>
-                  <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    per person
-                  </div>
-                </div>
-                <Link
-                  to="/book"
-                  search={{ pkg: p.slug }}
-                  className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--gradient-ember)] text-ember-foreground px-5 py-2.5 text-xs font-semibold shadow-glow"
+
+        {loadingDepartures ? (
+          <div className="text-sm text-muted-foreground text-center py-8">Loading upcoming departures...</div>
+        ) : displayedPackages.length === 0 ? (
+          <div className="rounded-3xl border border-border bg-card p-12 text-center text-muted-foreground max-w-2xl mx-auto shadow-sm">
+            <p className="font-semibold text-foreground text-lg">No upcoming departures available at the moment.</p>
+            <p className="text-xs mt-2">Check back later or contact us directly on WhatsApp to inquire about custom batches.</p>
+            <a
+              href={`https://wa.me/${whatsappPhone}?text=Hi%20${encodeURIComponent(companyName)}%2C%20I%27d%20like%20to%20inquire%20about%20upcoming%20departure%20batches.`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-[oklch(0.62_0.16_150)] px-5 py-2.5 text-xs font-semibold text-white shadow-glow hover:opacity-95 transition mt-4"
+            >
+              Chat on WhatsApp
+            </a>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            {displayedPackages.map(({ pkg: p, batch }) => {
+              const isSoldOut = batch.status === "full" || (batch.booked_seats >= batch.max_seats && !batch.unlimited_seats);
+              const seatsLeftVal = batch.max_seats - batch.booked_seats;
+
+              return (
+                <div
+                  key={p.slug}
+                  className="flex flex-col sm:flex-row sm:items-center gap-5 rounded-2xl bg-card border border-border p-5 shadow-card hover:shadow-elegant transition-shadow"
                 >
-                  Reserve <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            );
-          })}
-        </div>
+                  <img
+                    src={p.image}
+                    alt={p.name}
+                    loading="lazy"
+                    className="h-24 w-full sm:w-36 rounded-xl object-cover shrink-0"
+                  />
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <h3 className="font-display text-lg font-bold text-foreground leading-tight">
+                        {p.name}
+                      </h3>
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                        {p.category === "trek" ? "Trek" : "Trip"}
+                      </span>
+                    </div>
+
+                    <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-2">
+                      <span>{p.duration}</span>
+                      <span>•</span>
+                      <span>Departs {formatIndexBatchDate(batch.start_date)}</span>
+                    </div>
+
+                    {/* Dynamic Seat Availability Indicator */}
+                    <div className="text-xs flex items-center gap-1.5 font-semibold pt-1">
+                      {isSoldOut ? (
+                        <span className="text-red-600 flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-red-600" /> Sold Out
+                        </span>
+                      ) : seatsLeftVal < 5 ? (
+                        <span className="text-amber-600 flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" /> Only {seatsLeftVal} Seats Left
+                        </span>
+                      ) : (
+                        <span className="text-green-600 flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> {batch.unlimited_seats ? "Seats Available" : `${seatsLeftVal} Seats Left`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="text-left sm:text-right shrink-0">
+                    <div className="font-display text-xl font-bold text-primary">
+                      {p.priceLabel}
+                    </div>
+                    <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                      per person
+                    </div>
+                  </div>
+
+                  <div className="shrink-0 sm:pl-4">
+                    {isSoldOut ? (
+                      <a
+                        href={`https://wa.me/${whatsappPhone}?text=Hi%20${encodeURIComponent(companyName)}%2C%20I%20would%20like%20to%20join%20the%20next%20available%20batch%20for%20${encodeURIComponent(p.name)}.`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[oklch(0.62_0.16_150)] text-white px-5 py-3 text-xs font-semibold shadow-glow hover:opacity-95 transition text-center min-w-[130px]"
+                      >
+                        Join via WhatsApp
+                      </a>
+                    ) : (
+                      <Link
+                        to="/packages/$slug"
+                        params={{ slug: p.slug }}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[var(--gradient-ember)] text-ember-foreground px-5 py-3 text-xs font-semibold shadow-glow hover:opacity-90 transition text-center min-w-[130px]"
+                      >
+                        View Details <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );
