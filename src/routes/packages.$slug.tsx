@@ -112,7 +112,7 @@ function PackageDetail() {
       if (!slug) return;
       setLoadingItinerary(true);
       const { data, error } = await supabase
-        .from("itineraries")
+        .from("package_itineraries")
         .select("*")
         .eq("package_slug", slug)
         .order("day_number", { ascending: true });
