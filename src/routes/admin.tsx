@@ -732,7 +732,7 @@ function AdminPage() {
         adventure_level: "Easy",
         activities: [],
         special_requirements: l.message,
-        status: l.lead_status || "New",
+        status: l.lead_status ? (l.lead_status.charAt(0).toUpperCase() + l.lead_status.slice(1)) : "New",
         internal_notes: l.internal_notes,
         created_at: l.created_at,
       }));
@@ -741,6 +741,43 @@ function AdminPage() {
       for (const ml of mappedLeads) {
         if (!existingIds.has(ml.id)) {
           requests.push(ml);
+        }
+      }
+    }
+
+    const { data: bookingData } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("package_slug", "custom-trip")
+      .order("created_at", { ascending: false });
+
+    if (bookingData && bookingData.length > 0) {
+      const mappedBookings: CustomTripRequest[] = bookingData.map((b) => ({
+        id: b.id,
+        full_name: b.full_name,
+        phone: b.phone || "",
+        email: b.email,
+        trip_type: b.package_name || "Custom Trip",
+        destination: "Uttarakhand",
+        starting_city: "Dehradun",
+        travel_date: b.travel_date || "Flexible",
+        days: "Custom",
+        travelers: String(b.travelers || 1),
+        budget_range: "Standard",
+        transport_required: "Yes",
+        meal_preference: "Standard",
+        adventure_level: "Easy",
+        activities: [],
+        special_requirements: b.special_requirements,
+        status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : "New",
+        internal_notes: b.internal_notes,
+        created_at: b.created_at,
+      }));
+
+      const existingIds = new Set(requests.map((r) => r.id));
+      for (const mb of mappedBookings) {
+        if (!existingIds.has(mb.id)) {
+          requests.push(mb);
         }
       }
     }
