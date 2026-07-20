@@ -107,6 +107,28 @@ type Lead = {
   created_at: string;
 };
 
+type CustomTripRequest = {
+  id: string;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  trip_type: string | null;
+  destination: string | null;
+  starting_city: string | null;
+  travel_date: string | null;
+  days: string | null;
+  travelers: string | null;
+  budget_range: string | null;
+  transport_required: string | null;
+  meal_preference: string | null;
+  adventure_level: string | null;
+  activities: string[] | null;
+  special_requirements: string | null;
+  status: string;
+  internal_notes: string | null;
+  created_at: string;
+};
+
 type BlogPost = {
   id: string;
   slug: string;
@@ -342,6 +364,7 @@ function AdminPage() {
     | "rbac"
     | "customers"
     | "leads"
+    | "custom_trips"
     | "blogs"
     | "coupons"
     | "reviews"
@@ -353,6 +376,9 @@ function AdminPage() {
   // New Table States
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [customTrips, setCustomTrips] = useState<CustomTripRequest[]>([]);
+  const [selectedCustomTrip, setSelectedCustomTrip] = useState<CustomTripRequest | null>(null);
+  const [customTripStatusFilter, setCustomTripStatusFilter] = useState("all");
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -638,6 +664,7 @@ function AdminPage() {
       fetchRBAC();
       fetchCustomers();
       fetchLeads();
+      fetchCustomTripRequests();
       fetchPosts();
       fetchCoupons();
       fetchReviews();
@@ -667,6 +694,64 @@ function AdminPage() {
       console.error("Failed to load leads:", error.message);
     } else {
       setLeads(data as Lead[]);
+    }
+  }
+
+  async function fetchCustomTripRequests() {
+    const { data, error } = await supabase
+      .from("custom_trip_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("Failed to load custom trip requests:", error.message);
+    } else {
+      setCustomTrips(data as CustomTripRequest[]);
+    }
+  }
+
+  async function updateCustomTripStatus(id: string, status: string) {
+    const { error } = await supabase
+      .from("custom_trip_requests")
+      .update({ status })
+      .eq("id", id);
+    if (error) {
+      toast.error("Failed to update status: " + error.message);
+    } else {
+      toast.success(`Request status updated to ${status}`);
+      if (selectedCustomTrip && selectedCustomTrip.id === id) {
+        setSelectedCustomTrip({ ...selectedCustomTrip, status });
+      }
+      fetchCustomTripRequests();
+    }
+  }
+
+  async function saveCustomTripNotes(id: string, notes: string) {
+    const { error } = await supabase
+      .from("custom_trip_requests")
+      .update({ internal_notes: notes })
+      .eq("id", id);
+    if (error) {
+      toast.error("Failed to save notes: " + error.message);
+    } else {
+      toast.success("Notes saved successfully");
+      if (selectedCustomTrip && selectedCustomTrip.id === id) {
+        setSelectedCustomTrip({ ...selectedCustomTrip, internal_notes: notes });
+      }
+      fetchCustomTripRequests();
+    }
+  }
+
+  async function handleDeleteCustomTrip(id: string) {
+    if (!confirm("Are you sure you want to delete this custom trip request?")) return;
+    const { error } = await supabase.from("custom_trip_requests").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete request: " + error.message);
+    } else {
+      toast.success("Request deleted");
+      if (selectedCustomTrip && selectedCustomTrip.id === id) {
+        setSelectedCustomTrip(null);
+      }
+      fetchCustomTripRequests();
     }
   }
 
@@ -2014,6 +2099,12 @@ function AdminPage() {
               Leads CRM
             </button>
             <button
+              onClick={() => setActiveTab("custom_trips")}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition cursor-pointer ${activeTab === "custom_trips" ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted text-foreground border border-border"}`}
+            >
+              ✨ Custom Trips
+            </button>
+            <button
               onClick={() => setActiveTab("blogs")}
               className={`rounded-xl px-4 py-2 text-sm font-semibold transition cursor-pointer ${activeTab === "blogs" ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted text-foreground border border-border"}`}
             >
@@ -2428,6 +2519,376 @@ function AdminPage() {
               </div>
             </div>
           )}
+          {/* ================================== CUSTOM TRIP REQUESTS CMS TAB ================================== */}
+          {activeTab === "custom_trips" && (
+            <div className="space-y-6">
+              <div className="rounded-3xl border border-border bg-card shadow-card overflow-hidden">
+                <div className="p-4 border-b border-border flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-foreground">
+                      ✨ Custom Trip Requests
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Manage personalized trip inquiries, update lead status, and send custom quotations.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {["all", "new", "contacted", "planning", "quotation sent", "confirmed", "cancelled"].map((st) => (
+                      <button
+                        key={st}
+                        onClick={() => setCustomTripStatusFilter(st)}
+                        className={`capitalize rounded-lg px-3 py-1 text-xs font-semibold border ${
+                          customTripStatusFilter === st
+                            ? "bg-primary text-primary-foreground border-transparent"
+                            : "bg-background text-muted-foreground border-border hover:bg-muted"
+                        }`}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-muted text-muted-foreground text-xs uppercase font-semibold">
+                      <tr>
+                        <th className="px-6 py-4">Customer Details</th>
+                        <th className="px-6 py-4">Trip Type & Destination</th>
+                        <th className="px-6 py-4">Pax & Budget</th>
+                        <th className="px-6 py-4">Date Received</th>
+                        <th className="px-6 py-4">Status</th>
+                        <th className="px-6 py-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border text-foreground">
+                      {customTrips.filter((r) => {
+                        const q = query.toLowerCase();
+                        const matchesSearch =
+                          !q ||
+                          r.full_name?.toLowerCase().includes(q) ||
+                          r.phone?.toLowerCase().includes(q) ||
+                          r.email?.toLowerCase().includes(q) ||
+                          r.destination?.toLowerCase().includes(q) ||
+                          r.trip_type?.toLowerCase().includes(q);
+
+                        const matchesStatus =
+                          customTripStatusFilter === "all" ||
+                          r.status?.toLowerCase() === customTripStatusFilter.toLowerCase();
+
+                        return matchesSearch && matchesStatus;
+                      }).length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-10 text-center text-muted-foreground">
+                            No custom trip requests found.
+                          </td>
+                        </tr>
+                      ) : (
+                        customTrips
+                          .filter((r) => {
+                            const q = query.toLowerCase();
+                            const matchesSearch =
+                              !q ||
+                              r.full_name?.toLowerCase().includes(q) ||
+                              r.phone?.toLowerCase().includes(q) ||
+                              r.email?.toLowerCase().includes(q) ||
+                              r.destination?.toLowerCase().includes(q) ||
+                              r.trip_type?.toLowerCase().includes(q);
+
+                            const matchesStatus =
+                              customTripStatusFilter === "all" ||
+                              r.status?.toLowerCase() === customTripStatusFilter.toLowerCase();
+
+                            return matchesSearch && matchesStatus;
+                          })
+                          .map((r) => (
+                            <tr key={r.id} className="hover:bg-muted/30 transition">
+                              <td className="px-6 py-4">
+                                <div className="font-semibold text-foreground">{r.full_name}</div>
+                                <div className="text-xs text-muted-foreground">{r.phone}</div>
+                                {r.email && <div className="text-xs text-muted-foreground">{r.email}</div>}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="font-semibold">{r.trip_type || "Custom Trip"}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {r.destination || "Uttarakhand"} ({r.days || "N/A"})
+                                </div>
+                                {r.travel_date && (
+                                  <div className="text-[11px] text-muted-foreground">
+                                    Date: {r.travel_date}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="font-semibold">{r.travelers} Travellers</div>
+                                <div className="text-xs text-muted-foreground">{r.budget_range}</div>
+                              </td>
+                              <td className="px-6 py-4 text-xs text-muted-foreground">
+                                {new Date(r.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4">
+                                <span
+                                  className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                    r.status === "New"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : r.status === "Contacted"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : r.status === "Planning"
+                                      ? "bg-purple-100 text-purple-800"
+                                      : r.status === "Quotation Sent"
+                                      ? "bg-indigo-100 text-indigo-800"
+                                      : r.status === "Confirmed"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {r.status}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-right space-x-1.5 whitespace-nowrap">
+                                <button
+                                  onClick={() => setSelectedCustomTrip(r)}
+                                  className="rounded bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/20 transition cursor-pointer"
+                                >
+                                  View / Edit
+                                </button>
+                                <a
+                                  href={`tel:${r.phone}`}
+                                  className="rounded bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2 py-1 text-xs font-semibold transition inline-block"
+                                >
+                                  📞 Call
+                                </a>
+                                <a
+                                  href={`https://wa.me/${r.phone.replace(/[^0-9]/g, "")}?text=Hi%20${encodeURIComponent(
+                                    r.full_name
+                                  )}%2C%20thank%20you%20for%20contacting%20${encodeURIComponent(
+                                    companySettings.company_name || "Explore Hills"
+                                  )}%20regarding%20your%20Custom%20Trip%20request.`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="rounded bg-[oklch(0.62_0.16_150)] text-white hover:opacity-90 px-2 py-1 text-xs font-semibold transition inline-block"
+                                >
+                                  💬 WhatsApp
+                                </a>
+                                <button
+                                  onClick={() => handleDeleteCustomTrip(r.id)}
+                                  className="rounded bg-red-50 text-red-700 hover:bg-red-100 px-2 py-1 text-xs font-semibold transition cursor-pointer"
+                                >
+                                  Delete
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Custom Trip Request Detail Modal / Drawer */}
+          {selectedCustomTrip && (
+            <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4">
+              <div className="w-full max-w-3xl rounded-3xl bg-card border border-border p-6 shadow-elegant text-foreground max-h-[90vh] overflow-y-auto space-y-6">
+                <div className="flex justify-between items-center border-b border-border pb-4">
+                  <div>
+                    <h4 className="font-display text-xl font-bold">
+                      Custom Trip Request Details
+                    </h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Request ID: {selectedCustomTrip.id} • Received: {new Date(selectedCustomTrip.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedCustomTrip(null)}
+                    className="rounded-full hover:bg-muted p-1 cursor-pointer"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Contact Actions Bar */}
+                <div className="bg-mist border border-border rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <div className="font-bold text-sm text-foreground">{selectedCustomTrip.full_name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      📱 {selectedCustomTrip.phone} {selectedCustomTrip.email && `• ✉️ ${selectedCustomTrip.email}`}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedCustomTrip.phone);
+                        toast.success("Phone number copied to clipboard!");
+                      }}
+                      className="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold hover:bg-muted transition cursor-pointer"
+                    >
+                      📋 Copy Phone
+                    </button>
+                    <a
+                      href={`tel:${selectedCustomTrip.phone}`}
+                      className="rounded-xl bg-emerald-600 text-white px-3.5 py-1.5 text-xs font-semibold hover:bg-emerald-700 transition"
+                    >
+                      📞 Call Customer
+                    </a>
+                    <a
+                      href={`https://wa.me/${selectedCustomTrip.phone.replace(/[^0-9]/g, "")}?text=Hi%20${encodeURIComponent(
+                        selectedCustomTrip.full_name
+                      )}%2C%20thank%20you%20for%20contacting%20${encodeURIComponent(
+                        companySettings.company_name || "Explore Hills"
+                      )}%20regarding%20your%20Custom%20Trip%20request.`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-xl bg-[oklch(0.62_0.16_150)] text-white px-3.5 py-1.5 text-xs font-semibold hover:opacity-95 transition"
+                    >
+                      💬 WhatsApp Chat
+                    </a>
+                  </div>
+                </div>
+
+                {/* Detailed Spec Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 bg-muted/20 border border-border rounded-2xl p-5 text-xs">
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Trip Type</span>
+                    <span className="font-bold text-foreground text-sm">{selectedCustomTrip.trip_type || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Preferred Destination</span>
+                    <span className="font-bold text-foreground text-sm">{selectedCustomTrip.destination || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Starting City</span>
+                    <span className="font-bold text-foreground text-sm">{selectedCustomTrip.starting_city || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Travel Date</span>
+                    <span className="font-bold text-foreground text-sm">{selectedCustomTrip.travel_date || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Duration</span>
+                    <span className="font-bold text-foreground text-sm">{selectedCustomTrip.days || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Travellers</span>
+                    <span className="font-bold text-foreground text-sm">{selectedCustomTrip.travelers || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Budget Range</span>
+                    <span className="font-bold text-foreground text-sm">{selectedCustomTrip.budget_range || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Transport Required</span>
+                    <span className="font-bold text-foreground text-sm">{selectedCustomTrip.transport_required || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block font-medium">Adventure Level</span>
+                    <span className="font-bold text-foreground text-sm">{selectedCustomTrip.adventure_level || "N/A"}</span>
+                  </div>
+                </div>
+
+                {/* Meal & Activities */}
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                      Meal Preference
+                    </span>
+                    <span className="text-xs font-semibold text-foreground bg-muted px-3 py-1 rounded-lg inline-block">
+                      {selectedCustomTrip.meal_preference || "Standard Meals"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                      Selected Activities & Experiences
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedCustomTrip.activities && selectedCustomTrip.activities.length > 0 ? (
+                        selectedCustomTrip.activities.map((act) => (
+                          <span
+                            key={act}
+                            className="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full"
+                          >
+                            ✓ {act}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-muted-foreground">No specific activities selected</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Special Requirements */}
+                {selectedCustomTrip.special_requirements && (
+                  <div className="space-y-1">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
+                      Special Requirements / Note from Customer
+                    </span>
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 text-xs font-medium text-amber-900 dark:text-amber-100 leading-relaxed">
+                      "{selectedCustomTrip.special_requirements}"
+                    </div>
+                  </div>
+                )}
+
+                {/* Status Update & Internal Notes */}
+                <div className="border-t border-border pt-4 grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                      Update Request Status
+                    </label>
+                    <select
+                      value={selectedCustomTrip.status}
+                      onChange={(e) => updateCustomTripStatus(selectedCustomTrip.id, e.target.value)}
+                      className="w-full rounded-xl border border-input bg-background px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring font-semibold text-foreground"
+                    >
+                      <option value="New">New</option>
+                      <option value="Contacted">Contacted</option>
+                      <option value="Planning">Planning</option>
+                      <option value="Quotation Sent">Quotation Sent</option>
+                      <option value="Confirmed">Confirmed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                      Internal Notes
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={selectedCustomTrip.internal_notes || ""}
+                      onChange={(e) =>
+                        setSelectedCustomTrip({ ...selectedCustomTrip, internal_notes: e.target.value })
+                      }
+                      placeholder="Add notes for team e.g. Sent itinerary PDF on WhatsApp..."
+                      className="w-full rounded-xl border border-input bg-background px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        saveCustomTripNotes(selectedCustomTrip.id, selectedCustomTrip.internal_notes || "")
+                      }
+                      className="mt-2 rounded-xl bg-primary text-primary-foreground px-4 py-1.5 text-xs font-semibold hover:opacity-95 shadow-sm cursor-pointer"
+                    >
+                      Save Internal Notes
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-end border-t border-border pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCustomTrip(null)}
+                    className="rounded-xl border border-border px-5 py-2 text-xs font-semibold hover:bg-muted cursor-pointer"
+                  >
+                    Close Drawer
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ================================== CUSTOMERS CRM TAB ================================== */}
           {activeTab === "customers" && (
             <div className="space-y-6">

@@ -15,6 +15,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as CustomizeRouteImport } from './routes/customize'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CareersRouteImport } from './routes/careers'
 import { Route as BookRouteImport } from './routes/book'
@@ -53,6 +54,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CustomizeRoute = CustomizeRouteImport.update({
+  id: '/customize',
+  path: '/customize',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/book': typeof BookRoute
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
+  '/customize': typeof CustomizeRoute
   '/gallery': typeof GalleryRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/book': typeof BookRoute
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
+  '/customize': typeof CustomizeRoute
   '/gallery': typeof GalleryRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/book': typeof BookRoute
   '/careers': typeof CareersRoute
   '/contact': typeof ContactRoute
+  '/customize': typeof CustomizeRoute
   '/gallery': typeof GalleryRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/book'
     | '/careers'
     | '/contact'
+    | '/customize'
     | '/gallery'
     | '/privacy'
     | '/sitemap.xml'
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/book'
     | '/careers'
     | '/contact'
+    | '/customize'
     | '/gallery'
     | '/privacy'
     | '/sitemap.xml'
@@ -197,6 +208,7 @@ export interface FileRouteTypes {
     | '/book'
     | '/careers'
     | '/contact'
+    | '/customize'
     | '/gallery'
     | '/privacy'
     | '/sitemap.xml'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   BookRoute: typeof BookRoute
   CareersRoute: typeof CareersRoute
   ContactRoute: typeof ContactRoute
+  CustomizeRoute: typeof CustomizeRoute
   GalleryRoute: typeof GalleryRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -266,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/customize': {
+      id: '/customize'
+      path: '/customize'
+      fullPath: '/customize'
+      preLoaderRoute: typeof CustomizeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -352,6 +372,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookRoute: BookRoute,
   CareersRoute: CareersRoute,
   ContactRoute: ContactRoute,
+  CustomizeRoute: CustomizeRoute,
   GalleryRoute: GalleryRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

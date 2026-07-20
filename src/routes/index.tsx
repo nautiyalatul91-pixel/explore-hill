@@ -284,7 +284,7 @@ function Home() {
     ? homepageData.faqs
     : faqs;
 
-  const activeSections = homepageData?.sections && Array.isArray(homepageData.sections)
+  const rawSections = homepageData?.sections && Array.isArray(homepageData.sections)
     ? homepageData.sections.filter((s: any) => s.enabled)
     : [
         { id: "hero" },
@@ -293,8 +293,13 @@ function Home() {
         { id: "categories" },
         { id: "testimonials" },
         { id: "departures" },
+        { id: "customize" },
         { id: "faqs" }
       ];
+
+  const activeSections = rawSections.some((s: any) => s.id === "customize")
+    ? rawSections
+    : rawSections.flatMap((s: any) => s.id === "departures" ? [s, { id: "customize" }] : [s]);
 
   const renderHero = () => (
     <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
@@ -666,6 +671,64 @@ function Home() {
     </section>
   );
 
+  const renderCustomizeYourTrip = () => (
+    <section className="py-20 sm:py-28 bg-card border-y border-border">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="text-center max-w-3xl mx-auto space-y-4">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+            <Sparkles className="h-3.5 w-3.5" /> Didn't find a suitable trip?
+          </span>
+          <h2 className="font-display text-4xl sm:text-5xl font-bold text-foreground">
+            ✨ Customize Your Trip
+          </h2>
+          <p className="text-base text-muted-foreground leading-relaxed">
+            Planning a special trip with your family, partner or friends? Tell us your budget, travel dates and requirements, and our travel experts will design a completely personalized trip exclusively for you.
+          </p>
+        </div>
+
+        {/* Perfect For Grid */}
+        <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {[
+            { title: "Family Trips", emoji: "👨‍👩‍👧‍👦", desc: "Warm & comfortable" },
+            { title: "Couple Getaways", emoji: "❤️", desc: "Private & romantic" },
+            { title: "Friends Group Trips", emoji: "👥", desc: "Bonfires & fun" },
+            { title: "College Tours", emoji: "🎓", desc: "Budget friendly" },
+            { title: "Custom Adventure Trips", emoji: "🏔️", desc: "Offbeat trails" },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className="rounded-2xl border border-border bg-background p-5 text-center shadow-sm hover:border-primary/40 hover:shadow-md transition-all"
+            >
+              <div className="text-3xl mb-2">{item.emoji}</div>
+              <div className="font-display text-sm font-bold text-foreground">{item.title}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Subheading & CTA */}
+        <div className="mt-12 rounded-3xl bg-mist border border-border p-8 text-center max-w-3xl mx-auto space-y-4 shadow-sm">
+          <div className="space-y-1">
+            <h3 className="font-display text-xl font-bold text-foreground">
+              Need help planning your trip?
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Our travel experts will contact you within 24 hours with a personalized itinerary and quotation.
+            </p>
+          </div>
+          <div>
+            <Link
+              to="/customize"
+              className="inline-flex items-center gap-2 rounded-full bg-[var(--gradient-ember)] px-8 py-3.5 text-sm font-semibold text-ember-foreground shadow-glow hover:scale-[1.02] transition-transform"
+            >
+              Plan My Trip <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+
   const SECTIONS_MAP: Record<string, () => JSX.Element> = {
     hero: renderHero,
     featured: renderFeatured,
@@ -673,6 +736,7 @@ function Home() {
     categories: renderCategories,
     testimonials: renderTestimonials,
     departures: renderDepartures,
+    customize: renderCustomizeYourTrip,
     faqs: renderFAQs
   };
 
