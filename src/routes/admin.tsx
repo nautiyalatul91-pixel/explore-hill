@@ -698,15 +698,54 @@ function AdminPage() {
   }
 
   async function fetchCustomTripRequests() {
-    const { data, error } = await supabase
+    let requests: CustomTripRequest[] = [];
+    const { data: customData, error: customError } = await supabase
       .from("custom_trip_requests")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) {
-      console.error("Failed to load custom trip requests:", error.message);
-    } else {
-      setCustomTrips(data as CustomTripRequest[]);
+
+    if (!customError && customData) {
+      requests = customData as CustomTripRequest[];
     }
+
+    const { data: leadData } = await supabase
+      .from("leads")
+      .select("*")
+      .eq("lead_source", "Customize Your Trip")
+      .order("created_at", { ascending: false });
+
+    if (leadData && leadData.length > 0) {
+      const mappedLeads: CustomTripRequest[] = leadData.map((l) => ({
+        id: l.id,
+        full_name: l.name,
+        phone: l.phone || "",
+        email: l.email,
+        trip_type: l.interested_package || "Custom Trip",
+        destination: l.interested_package || "Uttarakhand",
+        starting_city: "Dehradun",
+        travel_date: "Flexible",
+        days: "Custom",
+        travelers: "Custom",
+        budget_range: "Standard",
+        transport_required: "Yes",
+        meal_preference: "Standard",
+        adventure_level: "Easy",
+        activities: [],
+        special_requirements: l.message,
+        status: l.lead_status || "New",
+        internal_notes: l.internal_notes,
+        created_at: l.created_at,
+      }));
+
+      const existingIds = new Set(requests.map((r) => r.id));
+      for (const ml of mappedLeads) {
+        if (!existingIds.has(ml.id)) {
+          requests.push(ml);
+        }
+      }
+    }
+
+    setCustomTrips(requests);
   }
 
   async function updateCustomTripStatus(id: string, status: string) {

@@ -117,7 +117,7 @@ function CustomizePage() {
     setSubmitting(true);
 
     try {
-      const { error } = await supabase.from("custom_trip_requests").insert({
+      const { error: customError } = await supabase.from("custom_trip_requests").insert({
         full_name: fullName.trim(),
         phone: mobilePhone.trim(),
         email: email.trim() || null,
@@ -136,7 +136,38 @@ function CustomizePage() {
         status: "New",
       });
 
-      if (error) throw error;
+      if (customError) {
+        console.warn("custom_trip_requests table error, executing fallback to leads:", customError.message);
+        const leadMessage = `[Custom Trip Request]
+Trip Type: ${tripType}
+Destination: ${destination.trim() || "Uttarakhand"}
+Starting City: ${startingCity.trim() || "Dehradun"}
+Travel Date: ${travelDate || "Flexible"}
+Duration: ${days}
+Travellers: ${travelers}
+Budget: ${budgetRange}
+Transport: ${transportRequired}
+Meal Pref: ${mealPreference}
+Adventure Level: ${adventureLevel}
+Activities: ${selectedActivities.join(", ")}
+Notes: ${specialRequirements.trim() || "None"}`;
+
+        const { error: leadError } = await supabase.from("leads").insert({
+          name: fullName.trim(),
+          phone: mobilePhone.trim(),
+          email: email.trim() || null,
+          message: leadMessage,
+          interested_package: destination.trim() || tripType,
+          lead_source: "Customize Your Trip",
+          lead_status: "New",
+          internal_notes: `Trip Type: ${tripType} | Duration: ${days} | Pax: ${travelers} | Budget: ${budgetRange}`,
+        });
+
+        if (leadError) {
+          throw customError;
+        }
+      }
+
       setSubmitted(true);
       toast.success("Your custom trip request has been submitted!");
     } catch (err: any) {
